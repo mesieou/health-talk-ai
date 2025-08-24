@@ -1,0 +1,46 @@
+{
+  "tools": [
+    {
+      "name": "check_availability",
+      "description": "Check available appointment slots for the mental health practice",
+      "version_description": "Fetches available appointment times based on date, time preference, and session type.",
+      "parameters": "{ \"type\": \"object\", \"required\": [], \"properties\": { \"date\": { \"type\": \"string\", \"description\": \"Preferred date for appointment (YYYY-MM-DD format)\" }, \"time_preference\": { \"type\": \"string\", \"enum\": [\"morning\", \"afternoon\", \"evening\", \"any\"], \"description\": \"Preferred time of day for the appointment\" }, \"session_type\": { \"type\": \"string\", \"enum\": [\"initial\", \"follow_up\"], \"description\": \"Type of session being requested\" } } }",
+      "fallback_content": "The appointment system is currently unavailable. Please try again later or contact us directly."
+    },
+    {
+      "name": "book_appointment",
+      "description": "Book a mental health appointment with patient information",
+      "version_description": "Creates a new appointment booking with patient details and sends confirmation.",
+      "parameters": "{ \"type\": \"object\", \"required\": [\"patient_name\", \"phone\", \"date\", \"time\"], \"properties\": { \"patient_name\": { \"type\": \"string\", \"description\": \"Patient's full name\" }, \"date_of_birth\": { \"type\": \"string\", \"description\": \"Patient's date of birth (YYYY-MM-DD format)\" }, \"phone\": { \"type\": \"string\", \"description\": \"Patient's phone number\" }, \"address\": { \"type\": \"string\", \"description\": \"Patient's full address\" }, \"emergency_contact\": { \"type\": \"string\", \"description\": \"Emergency contact name and phone number\" }, \"date\": { \"type\": \"string\", \"description\": \"Appointment date (YYYY-MM-DD format)\" }, \"time\": { \"type\": \"string\", \"description\": \"Appointment time (HH:MM format)\" }, \"presenting_issue\": { \"type\": \"string\", \"description\": \"Main reason for seeking mental health support\" }, \"gp_referral\": { \"type\": \"string\", \"description\": \"GP referral details if applicable\" }, \"therapy_goals\": { \"type\": \"string\", \"description\": \"What the patient hopes to achieve from therapy\" } } }",
+      "fallback_content": "The booking system is currently unavailable. Please try again later or contact us directly to book your appointment."
+    },
+    {
+      "name": "save_patient_info",
+      "description": "Securely save patient information for screening and records",
+      "version_description": "Stores patient information securely for future reference and screening purposes.",
+      "parameters": "{ \"type\": \"object\", \"required\": [\"patient_name\", \"phone\"], \"properties\": { \"patient_name\": { \"type\": \"string\", \"description\": \"Patient's full name\" }, \"date_of_birth\": { \"type\": \"string\", \"description\": \"Patient's date of birth (YYYY-MM-DD format)\" }, \"phone\": { \"type\": \"string\", \"description\": \"Patient's phone number\" }, \"address\": { \"type\": \"string\", \"description\": \"Patient's full address\" }, \"emergency_contact\": { \"type\": \"string\", \"description\": \"Emergency contact name and phone number\" }, \"presenting_issue\": { \"type\": \"string\", \"description\": \"Main concern or reason for seeking help\" }, \"screening_status\": { \"type\": \"string\", \"enum\": [\"incomplete\", \"complete\", \"high_risk\"], \"description\": \"Current status of the screening process\" } } }",
+      "fallback_content": "Unable to save patient information at the moment. Please try again or contact us directly."
+    },
+    {
+      "name": "log_risk_assessment",
+      "description": "Log risk assessment results and trigger alerts for high-risk cases",
+      "version_description": "Records risk assessment data and triggers appropriate alerts for high-risk situations.",
+      "parameters": "{ \"type\": \"object\", \"required\": [\"patient_name\", \"risk_level\"], \"properties\": { \"patient_name\": { \"type\": \"string\", \"description\": \"Patient's name\" }, \"risk_level\": { \"type\": \"string\", \"enum\": [\"low\", \"medium\", \"high\", \"crisis\"], \"description\": \"Assessed risk level based on screening\" }, \"suicide_risk\": { \"type\": \"boolean\", \"description\": \"Whether suicide risk was identified\" }, \"self_harm_risk\": { \"type\": \"boolean\", \"description\": \"Whether self-harm risk was identified\" }, \"crisis_intervention_provided\": { \"type\": \"boolean\", \"description\": \"Whether crisis intervention resources were provided\" }, \"notes\": { \"type\": \"string\", \"description\": \"Additional notes about the risk assessment\" } } }",
+      "fallback_content": "Unable to log risk assessment at the moment. If you're in crisis, please call Lifeline on 13 11 14 immediately."
+    },
+    {
+      "name": "get_practice_info",
+      "description": "Get information about the mental health practice",
+      "version_description": "Provides practice information including hours, pricing, location, and services offered.",
+      "parameters": "{ \"type\": \"object\", \"required\": [], \"properties\": { \"info_type\": { \"type\": \"string\", \"enum\": [\"hours\", \"pricing\", \"location\", \"services\", \"all\"], \"description\": \"Type of information requested about the practice\" } } }",
+      "fallback_content": "Unable to retrieve practice information at the moment. Please contact us directly for assistance."
+    },
+    {
+      "name": "send_confirmation",
+      "description": "Send appointment confirmation via SMS or email",
+      "version_description": "Sends appointment confirmation messages to patients via their preferred method.",
+      "parameters": "{ \"type\": \"object\", \"required\": [\"patient_name\", \"phone\", \"date\", \"time\"], \"properties\": { \"patient_name\": { \"type\": \"string\", \"description\": \"Patient's name\" }, \"phone\": { \"type\": \"string\", \"description\": \"Patient's phone number for SMS confirmation\" }, \"date\": { \"type\": \"string\", \"description\": \"Appointment date (YYYY-MM-DD format)\" }, \"time\": { \"type\": \"string\", \"description\": \"Appointment time (HH:MM format)\" }, \"confirmation_type\": { \"type\": \"string\", \"enum\": [\"sms\", \"email\", \"both\"], \"description\": \"How to send the confirmation\" } } }",
+      "fallback_content": "Unable to send confirmation at the moment, but your appointment is still booked. Please contact us if you need to confirm your appointment details."
+    }
+  ]
+}

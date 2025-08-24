@@ -32,11 +32,11 @@ export default function StartCall({ configId, accessToken }: { configId?: string
               <Button
                 className={"z-50 flex items-center gap-1.5 rounded-full"}
                 onClick={() => {
-                  connect({ 
+                  connect({
                     auth: { type: "accessToken", value: accessToken },
-                    configId, 
-                    // additional options can be added here
-                    // like resumedChatGroupId and sessionSettings
+                    configId,
+                    // Tool handling will be managed by Hume AI configuration
+                    // Tools are defined in the Hume dashboard and will be called automatically
                   })
                     .then(() => {})
                     .catch(() => {
