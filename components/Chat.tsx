@@ -1,11 +1,122 @@
 "use client";
 
-import { VoiceProvider } from "@humeai/voice-react";
+import { VoiceProvider, ToolCallHandler } from "@humeai/voice-react";
 import Messages from "./Messages";
 import Controls from "./Controls";
 import StartCall from "./StartCall";
 import { ComponentRef, useRef } from "react";
-import { toast } from "sonner";
+
+type ToolMeta = {
+  endpoint: string;
+  error: {
+    error: string;
+    code: string;
+    level: "warn" | "error";
+    content: string;
+  };
+};
+
+const tools: Record<string, ToolMeta> = {
+  get_practice_info: {
+    endpoint: "/api/tools/get-practice-info",
+    error: {
+      error: "Practice info tool error",
+      code: "practice_info_error",
+      level: "warn",
+      content: "There was an error retrieving practice information",
+    },
+  },
+  check_availability: {
+    endpoint: "/api/tools/check-availability",
+    error: {
+      error: "Availability tool error",
+      code: "availability_error",
+      level: "warn",
+      content: "There was an error checking availability",
+    },
+  },
+  book_appointment: {
+    endpoint: "/api/tools/book-appointment",
+    error: {
+      error: "Booking tool error",
+      code: "booking_error",
+      level: "warn",
+      content: "There was an error booking the appointment",
+    },
+  },
+  save_patient_info: {
+    endpoint: "/api/tools/save-patient-info",
+    error: {
+      error: "Patient info tool error",
+      code: "patient_info_error",
+      level: "warn",
+      content: "There was an error saving patient information",
+    },
+  },
+  log_risk_assessment: {
+    endpoint: "/api/tools/log-risk-assessment",
+    error: {
+      error: "Risk assessment tool error",
+      code: "risk_assessment_error",
+      level: "warn",
+      content: "There was an error logging the risk assessment",
+    },
+  },
+  send_confirmation: {
+    endpoint: "/api/tools/send-confirmation",
+    error: {
+      error: "Confirmation tool error",
+      code: "confirmation_error",
+      level: "warn",
+      content: "There was an error sending the confirmation",
+    },
+  },
+};
+
+const handleToolCall: ToolCallHandler = async (message, send) => {
+  console.log('🔧 Tool call received:', message.name, message.parameters);
+
+  const tool = tools[message.name];
+
+  if (!tool) {
+    console.error('❌ Tool not found:', message.name);
+    return send.error({
+      error: "Tool not found",
+      code: "tool_not_found",
+      level: "warn",
+      content: `The tool '${message.name}' was not found`,
+    });
+  }
+
+  try {
+    console.log('📋 Calling API:', tool.endpoint);
+
+    const response = await fetch(tool.endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ parameters: message.parameters }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`API call failed: ${response.status}`);
+    }
+
+    const result = await response.json();
+    console.log('✅ API result:', result);
+
+    return result.success
+      ? send.success(result.message || JSON.stringify(result))
+      : send.error({
+          error: result.error || "Tool execution failed",
+          code: "execution_error",
+          level: "warn",
+          content: result.error || "The tool failed to execute properly",
+        });
+  } catch (err) {
+    console.error('💥 Tool error:', err);
+    return send.error(tool.error);
+  }
+};
 
 export default function ClientComponent({
   accessToken,
@@ -17,7 +128,7 @@ export default function ClientComponent({
 
   // optional: use configId from environment variable
   const configId = process.env['NEXT_PUBLIC_HUME_CONFIG_ID'];
-  
+
   return (
     <div
       className={
@@ -25,6 +136,7 @@ export default function ClientComponent({
       }
     >
       <VoiceProvider
+        onToolCall={handleToolCall}
         onMessage={() => {
           if (timeout.current) {
             window.clearTimeout(timeout.current);
@@ -40,9 +152,6 @@ export default function ClientComponent({
               });
             }
           }, 200);
-        }}
-        onError={(error) => {
-          toast.error(error.message);
         }}
       >
         <Messages ref={ref} />

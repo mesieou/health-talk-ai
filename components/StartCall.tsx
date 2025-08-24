@@ -35,14 +35,15 @@ export default function StartCall({ configId, accessToken }: { configId?: string
                   connect({
                     auth: { type: "accessToken", value: accessToken },
                     configId,
-                    // Tool handling will be managed by Hume AI configuration
-                    // Tools are defined in the Hume dashboard and will be called automatically
                   })
-                    .then(() => {})
+                    .then((socket) => {
+                      // Expose WebSocket for tool responses
+                      (window as any)._humeWebSocket = socket;
+                      console.log('🔗 Connected to EVI and exposed WebSocket');
+                    })
                     .catch(() => {
                       toast.error("Unable to start call");
-                    })
-                    .finally(() => {});
+                    });
                 }}
               >
                 <span>
