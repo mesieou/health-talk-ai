@@ -16,11 +16,31 @@ const tools = {
   },
 
   async 'check_availability'(params: any) {
-    if (!params.date) throw new Error(MESSAGE_TEMPLATES.ERROR.date_required);
-    if (!isValidDateFormat(params.date)) throw new Error('Date must be YYYY-MM-DD');
+    const toolId = `check_avail_${Date.now()}`;
+    console.log(`📅 [${toolId}] check_availability called with:`, params);
+
+    // Require a specific date from the user
+    if (!params.date) {
+      console.log(`❌ [${toolId}] Missing date parameter`);
+      throw new Error(MESSAGE_TEMPLATES.ERROR.date_required);
+    }
+
+    if (!isValidDateFormat(params.date)) {
+      console.log(`❌ [${toolId}] Invalid date format:`, params.date);
+      throw new Error('Date must be YYYY-MM-DD');
+    }
+
+    console.log(`✅ [${toolId}] Date validation passed:`, params.date);
 
     const data = await AvailabilityService.checkAvailability(params);
     const message = AvailabilityService.formatAvailabilityMessage(data.date, data.available_slots);
+
+    console.log(`✅ [${toolId}] check_availability completed:`, {
+      date: data.date,
+      availableSlots: data.available_slots,
+      message: message
+    });
+
     return { message, data };
   },
 
@@ -46,7 +66,7 @@ const tools = {
     return { message, data };
   },
 
-  async 'log_risk_assessment'(params: any) {
+      async 'log_risk_assessment'(params: any) {
     const validation = validateRequiredFields(params, ['patient_name', 'risk_level']);
     if (!validation.isValid) throw new Error(`Missing: ${validation.missingFields.join(', ')}`);
 
@@ -75,12 +95,52 @@ const tools = {
 
 // Simple router
 export async function runTool(toolName: string, params: any) {
-  console.log('Available tools:', Object.keys(tools));
-  console.log('Requested tool:', toolName);
+  const executionId = `exec_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+  console.log(`🛠️ [${executionId}] Tool router called:`, {
+    toolName,
+    params,
+    availableTools: Object.keys(tools),
+    timestamp: new Date().toISOString()
+  });
 
   const tool = tools[toolName as keyof typeof tools];
-  if (!tool) throw new Error(`Unknown tool: ${toolName}`);
+  if (!tool) {
+    console.log(`❌ [${executionId}] Unknown tool requested:`, {
+      requestedTool: toolName,
+      availableTools: Object.keys(tools)
+    });
+    throw new Error(`Unknown tool: ${toolName}`);
+  }
 
-  console.log(`Running ${toolName}:`, params);
-  return await tool(params);
+  console.log(`⚡ [${executionId}] Executing tool function:`, {
+    toolName,
+    params,
+    paramsValidation: {
+      hasParams: !!params,
+      paramsType: typeof params,
+      paramsKeys: params ? Object.keys(params) : 'null',
+      paramsValues: params
+    }
+  });
+
+  try {
+    const result = await tool(params);
+
+    console.log(`✅ [${executionId}] Tool execution completed:`, {
+      toolName,
+      result,
+      executionTime: Date.now()
+    });
+
+    return result;
+  } catch (error) {
+    console.error(`💥 [${executionId}] Tool execution failed:`, {
+      toolName,
+      params,
+      error: error instanceof Error ? error.message : error,
+      stack: error instanceof Error ? error.stack : undefined
+    });
+    throw error;
+  }
 }

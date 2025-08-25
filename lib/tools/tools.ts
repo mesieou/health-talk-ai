@@ -21,6 +21,7 @@ import {
   generateRiskAssessmentId,
   generateTimeSlots,
   formatTimeSlots,
+  formatDateForDisplay,
   isHighRiskLevel
 } from './helpers';
 
@@ -30,6 +31,7 @@ import {
 export class PracticeInfoService {
   static getPracticeInfo(): PracticeInfo {
     return {
+      name: PRACTICE_CONFIG.NAME,
       hours: PRACTICE_CONFIG.HOURS,
       pricing: PRACTICE_CONFIG.PRICING,
       location: PRACTICE_CONFIG.LOCATION,
@@ -77,7 +79,8 @@ export class AvailabilityService {
 
   static formatAvailabilityMessage(date: string, slots: string[]): string {
     const slotTimes = formatTimeSlots(slots);
-    return `For ${date}, I have the following time slots available: ${slotTimes.join(', ')}. Would you like me to book one of these appointments for you?`;
+    const formattedDate = formatDateForDisplay(date);
+    return `For ${formattedDate}, I have the following time slots available: ${slotTimes.join(', ')}. Would you like me to book one of these appointments for you?`;
   }
 }
 

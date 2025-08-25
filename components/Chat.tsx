@@ -38,12 +38,23 @@ const tools: Record<string, ToolMeta> = {
 };
 
 const handleToolCall: ToolCallHandler = async (message, send) => {
-  console.log('🔧 Tool call received:', message.name, message.parameters);
+  const callId = `call_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+  console.log(`🔧 [${callId}] Tool call received from Hume AI:`, {
+    toolName: message.name,
+    parameters: message.parameters,
+    parametersType: typeof message.parameters,
+    parametersKeys: message.parameters ? Object.keys(message.parameters) : 'null',
+    timestamp: new Date().toISOString()
+  });
 
   const tool = tools[message.name];
 
   if (!tool) {
-    console.error('❌ Tool not found:', message.name);
+    console.error(`❌ [${callId}] Tool not found:`, {
+      requestedTool: message.name,
+      availableTools: Object.keys(tools)
+    });
     return send.error({
       error: "Tool not found",
       code: "tool_not_found",
@@ -53,23 +64,42 @@ const handleToolCall: ToolCallHandler = async (message, send) => {
   }
 
   try {
-    console.log('📋 Calling API:', tool.endpoint);
+    console.log(`📋 [${callId}] Calling API endpoint:`, {
+      endpoint: tool.endpoint,
+      toolName: message.name,
+      parameters: message.parameters
+    });
+
+    const requestBody = {
+      tool: message.name,
+      parameters: message.parameters
+    };
+
+    console.log(`📤 [${callId}] Request payload:`, JSON.stringify(requestBody, null, 2));
 
     const response = await fetch(tool.endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        tool: message.name,
-        parameters: message.parameters
-      }),
+      body: JSON.stringify(requestBody),
+    });
+
+    console.log(`📥 [${callId}] API response received:`, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: Object.fromEntries(response.headers.entries())
     });
 
     if (!response.ok) {
-      throw new Error(`API call failed: ${response.status}`);
+      throw new Error(`API call failed: ${response.status} ${response.statusText}`);
     }
 
     const result = await response.json();
-    console.log('✅ API result:', result);
+    console.log(`✅ [${callId}] API result:`, {
+      success: result.success,
+      message: result.message,
+      data: result.data,
+      error: result.error
+    });
 
     return result.success
       ? send.success(result.message || JSON.stringify(result))
@@ -80,7 +110,12 @@ const handleToolCall: ToolCallHandler = async (message, send) => {
           content: result.error || "The tool failed to execute properly",
         });
   } catch (err) {
-    console.error('💥 Tool error:', err);
+    console.error(`💥 [${callId}] Tool error:`, {
+      error: err instanceof Error ? err.message : err,
+      stack: err instanceof Error ? err.stack : undefined,
+      toolName: message.name,
+      parameters: message.parameters
+    });
     return send.error(tool.error);
   }
 };

@@ -2,9 +2,9 @@
   "tools": [
     {
       "name": "check_availability",
-      "description": "Check available appointment slots for the mental health practice",
-      "version_description": "Fetches available appointment times based on date, time preference, and session type.",
-      "parameters": "{ \"type\": \"object\", \"required\": [], \"properties\": { \"date\": { \"type\": \"string\", \"description\": \"Preferred date for appointment (YYYY-MM-DD format)\" }, \"time_preference\": { \"type\": \"string\", \"enum\": [\"morning\", \"afternoon\", \"evening\", \"any\"], \"description\": \"Preferred time of day for the appointment\" }, \"session_type\": { \"type\": \"string\", \"enum\": [\"initial\", \"follow_up\"], \"description\": \"Type of session being requested\" } } }",
+      "description": "Check available appointment slots for a specific date",
+      "version_description": "Fetches available appointment times for the specified date in YYYY-MM-DD format.",
+      "parameters": "{ \"type\": \"object\", \"required\": [\"date\"], \"properties\": { \"date\": { \"type\": \"string\", \"description\": \"Date to check availability for (YYYY-MM-DD format)\" } } }",
       "fallback_content": "The appointment system is currently unavailable. Please try again later or contact us directly."
     },
     {

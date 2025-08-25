@@ -1,5 +1,6 @@
 // Business configuration
 export const PRACTICE_CONFIG = {
+  NAME: "Mindful Mental Health Practice",
   HOURS: {
     monday: "9:00 AM - 6:00 PM",
     tuesday: "9:00 AM - 6:00 PM",

@@ -3,10 +3,10 @@ import { PRACTICE_CONFIG } from './business-context';
 // Message templates
 export const MESSAGE_TEMPLATES = {
   PRACTICE_INFO: {
-    hours: () => `We're open Monday to Thursday ${PRACTICE_CONFIG.HOURS.monday}, Friday ${PRACTICE_CONFIG.HOURS.friday}, Saturday ${PRACTICE_CONFIG.HOURS.saturday}, and ${PRACTICE_CONFIG.HOURS.sunday.toLowerCase()} on Sundays.`,
-    pricing: () => `Initial sessions are ${PRACTICE_CONFIG.PRICING.initial_session} and follow-up sessions are ${PRACTICE_CONFIG.PRICING.follow_up_session}.${PRACTICE_CONFIG.PRICING.concession_available ? " Concession rates are available." : ""}`,
-    location: () => `We're located at ${PRACTICE_CONFIG.LOCATION.address}, with ${PRACTICE_CONFIG.LOCATION.parking.toLowerCase()} and ${PRACTICE_CONFIG.LOCATION.public_transport.toLowerCase()}.`,
-    services: () => `We specialize in ${PRACTICE_CONFIG.SERVICES.map(service => service.toLowerCase()).join(', ')}.`
+    hours: () => `${PRACTICE_CONFIG.NAME} is open Monday to Thursday ${PRACTICE_CONFIG.HOURS.monday}, Friday ${PRACTICE_CONFIG.HOURS.friday}, Saturday ${PRACTICE_CONFIG.HOURS.saturday}, and ${PRACTICE_CONFIG.HOURS.sunday.toLowerCase()} on Sundays.`,
+    pricing: () => `At ${PRACTICE_CONFIG.NAME}, initial sessions are ${PRACTICE_CONFIG.PRICING.initial_session} and follow-up sessions are ${PRACTICE_CONFIG.PRICING.follow_up_session}.${PRACTICE_CONFIG.PRICING.concession_available ? " Concession rates are available." : ""}`,
+    location: () => `${PRACTICE_CONFIG.NAME} is located at ${PRACTICE_CONFIG.LOCATION.address}, with ${PRACTICE_CONFIG.LOCATION.parking.toLowerCase()} and ${PRACTICE_CONFIG.LOCATION.public_transport.toLowerCase()}.`,
+    services: () => `At ${PRACTICE_CONFIG.NAME}, we specialize in ${PRACTICE_CONFIG.SERVICES.map(service => service.toLowerCase()).join(', ')}.`
   },
   CONFIRMATION: (name: string, date: string, time: string) => ({
     messageToSend: `Hi ${name}, your appointment is confirmed for ${date} at ${time}. Please arrive 10 minutes early. If you need to reschedule, call us at ${PRACTICE_CONFIG.CONTACT.phone} at least 24 hours in advance.`,

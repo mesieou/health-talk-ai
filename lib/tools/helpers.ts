@@ -40,7 +40,13 @@ export function formatTimeSlots(slots: string[]): string[] {
     const hourNum = parseInt(hour);
     const period = hourNum >= 12 ? 'PM' : 'AM';
     const displayHour = hourNum > 12 ? hourNum - 12 : hourNum === 0 ? 12 : hourNum;
-    return `${displayHour}:${minute} ${period}`;
+
+    // Format time in a more natural way for speech
+    if (minute === '00') {
+      return `${displayHour} o'clock ${period}`;
+    } else {
+      return `${displayHour}:${minute} ${period}`;
+    }
   });
 }
 
@@ -115,16 +121,47 @@ export function validateRequiredFields<T extends Record<string, any>>(
   data: T,
   requiredFields: (keyof T)[]
 ): { isValid: boolean; missingFields: string[] } {
+  const validationId = `validation_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   const missingFields: string[] = [];
 
+  console.log(`🔍 [${validationId}] Starting field validation:`, {
+    data,
+    requiredFields: requiredFields.map(f => String(f)),
+    dataKeys: Object.keys(data)
+  });
+
   for (const field of requiredFields) {
-    if (!data[field] || (typeof data[field] === 'string' && data[field].trim() === '')) {
-      missingFields.push(field as string);
+    const value = data[field];
+    const fieldName = String(field);
+
+    console.log(`🔍 [${validationId}] Validating field '${fieldName}':`, {
+      value,
+      valueType: typeof value,
+      isUndefined: value === undefined,
+      isNull: value === null,
+      isEmptyString: value === '',
+      isWhitespaceOnly: typeof value === 'string' && value.trim() === ''
+    });
+
+    // More robust validation - check for falsy values and empty strings
+    const isValid = value !== undefined &&
+                   value !== null &&
+                   value !== '' &&
+                   !(typeof value === 'string' && value.trim() === '');
+
+    if (!isValid) {
+      missingFields.push(fieldName);
+      console.log(`❌ [${validationId}] Field '${fieldName}' is invalid`);
+    } else {
+      console.log(`✅ [${validationId}] Field '${fieldName}' is valid`);
     }
   }
 
-  return {
+  const result = {
     isValid: missingFields.length === 0,
     missingFields
   };
+
+  console.log(`📊 [${validationId}] Validation result:`, result);
+  return result;
 }
