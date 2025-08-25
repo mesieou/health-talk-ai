@@ -32,6 +32,8 @@ export class PracticeInfoService {
   static getPracticeInfo(): PracticeInfo {
     return {
       name: PRACTICE_CONFIG.NAME,
+      currentDate: PRACTICE_CONFIG.CURRENT_DATE,
+      currentTime: PRACTICE_CONFIG.CURRENT_TIME,
       hours: PRACTICE_CONFIG.HOURS,
       pricing: PRACTICE_CONFIG.PRICING,
       location: PRACTICE_CONFIG.LOCATION,
@@ -54,6 +56,9 @@ export class PracticeInfoService {
     }
     if (infoType === 'services' || infoType === 'all') {
       message += `${templates.services()} `;
+    }
+    if (infoType === 'datetime' || infoType === 'all') {
+      message += `${templates.currentDateTime()} `;
     }
 
     return message || 'Here\'s our practice information. What would you like to know more about?';

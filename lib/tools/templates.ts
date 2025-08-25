@@ -1,4 +1,4 @@
-import { PRACTICE_CONFIG } from './business-context';
+import { PRACTICE_CONFIG, getCurrentDateReadable, getCurrentDateTimeAU } from './business-context';
 
 // Message templates
 export const MESSAGE_TEMPLATES = {
@@ -6,14 +6,15 @@ export const MESSAGE_TEMPLATES = {
     hours: () => `${PRACTICE_CONFIG.NAME} is open Monday to Thursday ${PRACTICE_CONFIG.HOURS.monday}, Friday ${PRACTICE_CONFIG.HOURS.friday}, Saturday ${PRACTICE_CONFIG.HOURS.saturday}, and ${PRACTICE_CONFIG.HOURS.sunday.toLowerCase()} on Sundays.`,
     pricing: () => `At ${PRACTICE_CONFIG.NAME}, initial sessions are ${PRACTICE_CONFIG.PRICING.initial_session} and follow-up sessions are ${PRACTICE_CONFIG.PRICING.follow_up_session}.${PRACTICE_CONFIG.PRICING.concession_available ? " Concession rates are available." : ""}`,
     location: () => `${PRACTICE_CONFIG.NAME} is located at ${PRACTICE_CONFIG.LOCATION.address}, with ${PRACTICE_CONFIG.LOCATION.parking.toLowerCase()} and ${PRACTICE_CONFIG.LOCATION.public_transport.toLowerCase()}.`,
-    services: () => `At ${PRACTICE_CONFIG.NAME}, we specialize in ${PRACTICE_CONFIG.SERVICES.map(service => service.toLowerCase()).join(', ')}.`
+    services: () => `At ${PRACTICE_CONFIG.NAME}, we specialize in ${PRACTICE_CONFIG.SERVICES.map(service => service.toLowerCase()).join(', ')}.`,
+    currentDateTime: () => `Current date and time in Sydney: ${getCurrentDateTimeAU()}.`
   },
   CONFIRMATION: (name: string, date: string, time: string) => ({
     messageToSend: `Hi ${name}, your appointment is confirmed for ${date} at ${time}. Please arrive 10 minutes early. If you need to reschedule, call us at ${PRACTICE_CONFIG.CONTACT.phone} at least 24 hours in advance.`,
     responseMessage: "I've sent you a confirmation with your appointment details. Please check your phone for the confirmation message."
   }),
   BOOKING: {
-    success: (name: string, date: string, time: string, appointmentId: string) => `Great! I've booked your appointment for ${date} at ${time}. Your appointment ID is ${appointmentId}. You'll receive a confirmation shortly.`
+    success: (name: string, date: string, time: string, appointmentId: string) => `Great! I've booked your appointment for ${date} at ${time}. You'll receive a confirmation shortly.`
   },
   RISK_ASSESSMENT: {
     logged: () => `I've logged your assessment. If you need immediate help, please call Lifeline on ${PRACTICE_CONFIG.CONTACT.lifeline}.`,

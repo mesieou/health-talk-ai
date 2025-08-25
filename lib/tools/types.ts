@@ -36,6 +36,8 @@ export interface PracticeLocation {
 
 export interface PracticeInfo {
   name: string;
+  currentDate: string;
+  currentTime: string;
   hours: PracticeHours;
   pricing: PracticePricing;
   location: PracticeLocation;

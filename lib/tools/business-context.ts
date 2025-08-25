@@ -1,6 +1,8 @@
 // Business configuration
 export const PRACTICE_CONFIG = {
   NAME: "Mindful Mental Health Practice",
+  CURRENT_DATE: new Date().toLocaleDateString('en-AU', { timeZone: 'Australia/Sydney' }).split('/').reverse().join('-'), // YYYY-MM-DD format in Australian timezone
+  CURRENT_TIME: new Date().toLocaleTimeString('en-AU', { timeZone: 'Australia/Sydney', hour12: false }), // HH:MM:SS format in Australian timezone
   HOURS: {
     monday: "9:00 AM - 6:00 PM",
     tuesday: "9:00 AM - 6:00 PM",
@@ -84,3 +86,39 @@ export const ID_PREFIXES = {
   PATIENT: "PAT",
   RISK_ASSESSMENT: "RISK"
 } as const;
+
+// Helper function to get current date in readable format (Australian timezone)
+export function getCurrentDateReadable(): string {
+  const today = new Date();
+  return today.toLocaleDateString('en-AU', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    timeZone: 'Australia/Sydney'
+  });
+}
+
+// Helper function to get current date in ISO format (Australian timezone)
+export function getCurrentDateISO(): string {
+  const today = new Date();
+  return today.toLocaleDateString('en-AU', { timeZone: 'Australia/Sydney' }).split('/').reverse().join('-');
+}
+
+// Helper function to get current time in Australian timezone
+export function getCurrentTimeAU(): string {
+  return new Date().toLocaleTimeString('en-AU', {
+    timeZone: 'Australia/Sydney',
+    hour12: false,
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  });
+}
+
+// Helper function to get current date and time in Australian timezone
+export function getCurrentDateTimeAU(): string {
+  const date = getCurrentDateReadable();
+  const time = getCurrentTimeAU();
+  return `${date} at ${time}`;
+}
