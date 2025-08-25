@@ -16,61 +16,25 @@ type ToolMeta = {
   };
 };
 
+// Tool factory
+const createTool = (name: string, errorMessage: string): ToolMeta => ({
+  endpoint: "/api/tools",
+  error: {
+    error: `${name} tool error`,
+    code: `${name.replace(/_/g, '_')}_error`,
+    level: "warn" as const,
+    content: errorMessage,
+  },
+});
+
+// Tool definitions
 const tools: Record<string, ToolMeta> = {
-  get_practice_info: {
-    endpoint: "/api/tools/get-practice-info",
-    error: {
-      error: "Practice info tool error",
-      code: "practice_info_error",
-      level: "warn",
-      content: "There was an error retrieving practice information",
-    },
-  },
-  check_availability: {
-    endpoint: "/api/tools/check-availability",
-    error: {
-      error: "Availability tool error",
-      code: "availability_error",
-      level: "warn",
-      content: "There was an error checking availability",
-    },
-  },
-  book_appointment: {
-    endpoint: "/api/tools/book-appointment",
-    error: {
-      error: "Booking tool error",
-      code: "booking_error",
-      level: "warn",
-      content: "There was an error booking the appointment",
-    },
-  },
-  save_patient_info: {
-    endpoint: "/api/tools/save-patient-info",
-    error: {
-      error: "Patient info tool error",
-      code: "patient_info_error",
-      level: "warn",
-      content: "There was an error saving patient information",
-    },
-  },
-  log_risk_assessment: {
-    endpoint: "/api/tools/log-risk-assessment",
-    error: {
-      error: "Risk assessment tool error",
-      code: "risk_assessment_error",
-      level: "warn",
-      content: "There was an error logging the risk assessment",
-    },
-  },
-  send_confirmation: {
-    endpoint: "/api/tools/send-confirmation",
-    error: {
-      error: "Confirmation tool error",
-      code: "confirmation_error",
-      level: "warn",
-      content: "There was an error sending the confirmation",
-    },
-  },
+  get_practice_info: createTool("Practice info", "There was an error retrieving practice information"),
+  check_availability: createTool("Availability", "There was an error checking availability"),
+  book_appointment: createTool("Booking", "There was an error booking the appointment"),
+  save_patient_info: createTool("Patient info", "There was an error saving patient information"),
+  log_risk_assessment: createTool("Risk assessment", "There was an error logging the risk assessment"),
+  send_confirmation: createTool("Confirmation", "There was an error sending the confirmation"),
 };
 
 const handleToolCall: ToolCallHandler = async (message, send) => {
@@ -94,7 +58,10 @@ const handleToolCall: ToolCallHandler = async (message, send) => {
     const response = await fetch(tool.endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ parameters: message.parameters }),
+      body: JSON.stringify({
+        tool: message.name,
+        parameters: message.parameters
+      }),
     });
 
     if (!response.ok) {
