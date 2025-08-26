@@ -2,15 +2,76 @@
 
 This directory contains all the files needed to create the tools and configuration for your mental health practice voice assistant.
 
+## Dual Agent System
+
+This application now supports **two specialized agents**:
+
+1. **Customer Service Agent** - Handles patient appointments, inquiries, and support
+2. **Business Agent** - Handles business partnerships, professional consultations, and corporate services
+
+## Quick Setup for Dual Agents
+
+### Step 1: Set your API key
+```bash
+export HUME_API_KEY=your_api_key_here
+```
+
+### Step 2: Create Customer Service Agent (if not already done)
+```bash
+chmod +x setup-tools.sh
+./setup-tools.sh
+```
+
+### Step 3: Create Business Agent
+```bash
+chmod +x setup-business-agent.sh
+./setup-business-agent.sh
+```
+
+### Step 4: Update your environment variables
+Add to your `.env.local`:
+```bash
+# Customer Service Agent (your existing config)
+NEXT_PUBLIC_HUME_CONFIG_ID_CUSTOMER=your_customer_config_id
+
+# Business Agent (newly created)
+NEXT_PUBLIC_HUME_CONFIG_ID_BUSINESS=your_business_config_id
+```
+
 ## Files Overview
+
+### Configuration Files
+- `create-config.json` - Customer service agent configuration template
+- `create-business-config.json` - Business agent configuration template
 
 ### JSON Files
 - `create-tools.json` - Contains all 6 tools in one file
-- `create-config.json` - Configuration template with placeholders for tool IDs
 - Individual tool files (e.g., `check_availability.json`) - Single tool definitions
 
 ### Scripts
-- `setup-tools.sh` - Automated script to create all tools and configuration
+- `setup-tools.sh` - Automated script to create customer service agent
+- `setup-business-agent.sh` - Automated script to create business agent
+
+## Agent Capabilities
+
+### Customer Service Agent
+- **Tools**: All patient-facing tools
+  - `check_availability` - Check appointment slots
+  - `book_appointment` - Book patient appointments
+  - `save_patient_info` - Store patient information
+  - `log_risk_assessment` - Handle risk assessments
+  - `get_practice_info` - Provide practice information
+  - `send_confirmation` - Send appointment confirmations
+  - `log_consent` - Record call consent
+  - `log_privacy_check` - Verify privacy
+
+### Business Agent
+- **Tools**: Limited to business-appropriate tools
+  - `get_practice_info` - Provide practice information
+  - `save_patient_info` - Store business contact information
+  - `log_consent` - Record call consent
+  - `log_privacy_check` - Verify privacy
+- **Focus**: Professional partnerships, corporate services, referrals
 
 ## Setup Options
 
@@ -21,17 +82,14 @@ This directory contains all the files needed to create the tools and configurati
    export HUME_API_KEY=your_api_key_here
    ```
 
-2. **Make the script executable and run it:**
+2. **Create both agents:**
    ```bash
-   chmod +x setup-tools.sh
-   ./setup-tools.sh
+   chmod +x setup-tools.sh setup-business-agent.sh
+   ./setup-tools.sh        # Customer service agent
+   ./setup-business-agent.sh  # Business agent
    ```
 
-3. **The script will:**
-   - Create all 6 tools
-   - Create the configuration
-   - Save the configuration ID to `config_id.txt`
-   - Display all tool IDs for reference
+3. **Update your .env.local** with both configuration IDs
 
 ### Option 2: Manual Setup
 
@@ -54,15 +112,9 @@ Repeat for each tool:
 - `get_practice_info.json`
 - `send_confirmation.json`
 
-#### Step 2: Create Configuration
+#### Step 2: Create Configurations
 
-1. **Get the tool IDs** from the responses of step 1
-2. **Update `create-config.json`** by replacing the placeholders:
-   - `<TOOL_ID_1>` → actual tool ID for check_availability
-   - `<TOOL_ID_2>` → actual tool ID for book_appointment
-   - etc.
-
-3. **Create the configuration:**
+1. **Create Customer Service Configuration:**
    ```bash
    curl -X POST https://api.hume.ai/v0/evi/configs \
       -H "X-Hume-Api-Key: YOUR_API_KEY" \
@@ -70,68 +122,43 @@ Repeat for each tool:
       --json @create-config.json
    ```
 
+2. **Create Business Configuration:**
+   ```bash
+   curl -X POST https://api.hume.ai/v0/evi/configs \
+      -H "X-Hume-Api-Key: YOUR_API_KEY" \
+      -H "Content-Type: application/json" \
+      --json @create-business-config.json
+   ```
+
 ### Option 3: Using the Combined File
 
 ```bash
 # Extract and create each tool from the combined file
-jq -c '.tools[]' create-tools.json | while read tool; do
-    curl https://api.hume.ai/v0/evi/tools \
-       -H "X-Hume-Api-Key: YOUR_API_KEY" \
-       -H "Content-Type: application/json" \
-       --data "$tool"
-done
+curl https://api.hume.ai/v0/evi/tools \
+   -H "X-Hume-Api-Key: YOUR_API_KEY" \
+   --json @create-tools.json
 ```
 
-## After Setup
+## Usage
 
-1. **Add the configuration ID to your `.env.local`:**
-   ```
-   NEXT_PUBLIC_HUME_CONFIG_ID=your_config_id_here
-   ```
+Once set up, users can switch between agents in the chat interface:
 
-2. **Test your voice assistant** with the new tools
+1. **Customer Service Agent** - For patient appointments and support
+2. **Business Agent** - For business inquiries and partnerships
 
-3. **Check the browser console** for tool call logs
+The interface provides a simple toggle to switch between agents, each with their own specialized capabilities and tools.
 
-## Tool Descriptions
+## Tool Restrictions by Agent
 
-| Tool | Purpose |
-|------|---------|
-| `check_availability` | Find available appointment slots |
-| `book_appointment` | Schedule appointments with patient info |
-| `save_patient_info` | Securely store patient details |
-| `log_risk_assessment` | Log risk assessments and trigger alerts |
-| `get_practice_info` | Provide practice hours, pricing, location |
-| `send_confirmation` | Send SMS/email confirmations |
+- **Customer Service**: Full access to all patient-care tools
+- **Business**: Limited to business-appropriate tools only
+- Tools are automatically filtered based on the active agent
 
 ## Troubleshooting
 
-### Common Issues
+If you encounter issues:
 
-1. **API Key Error:**
-   - Ensure `HUME_API_KEY` is set correctly
-   - Check that your API key has the necessary permissions
-
-2. **Tool Creation Fails:**
-   - Verify the JSON syntax is valid
-   - Check that tool names are unique
-   - Ensure parameters schema is correct
-
-3. **Configuration Creation Fails:**
-   - Verify all tool IDs are correct
-   - Check that the prompt is not too long
-   - Ensure the language model is available
-
-### Getting Help
-
-- Check the Hume AI documentation
-- Verify your API key permissions
-- Test with a simple tool first
-- Check the response messages for specific errors
-
-## Security Notes
-
-- Keep your API key secure
-- Don't commit API keys to version control
-- Use environment variables for sensitive data
-- Regularly rotate your API keys
+1. **Check API key**: Ensure `HUME_API_KEY` is set correctly
+2. **Verify config IDs**: Check that both config IDs are in `.env.local`
+3. **Tool permissions**: Ensure tools are created and accessible
+4. **Check logs**: Server logs show which agent is making tool calls
