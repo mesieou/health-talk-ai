@@ -87,6 +87,7 @@ export default function ClientComponent({
         <Messages ref={ref} />
         <Controls />
         <StartCall configId={configId} accessToken={accessToken} />
+
       </VoiceProvider>
     </div>
   );
