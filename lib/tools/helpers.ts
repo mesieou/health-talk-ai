@@ -31,6 +31,13 @@ export function generateRiskAssessmentId(): string {
 }
 
 /**
+ * Generates business info ID
+ */
+export function generateBusinessId(): string {
+  return generateId('BIZ');
+}
+
+/**
  * Formats time slots from 24-hour to 12-hour format with AM/PM
  */
 export function formatTimeSlots(slots: string[]): string {

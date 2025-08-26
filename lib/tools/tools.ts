@@ -11,7 +11,9 @@ import {
   RiskAssessmentParams,
   RiskAssessmentResponse,
   ConfirmationParams,
-  ConfirmationResponse
+  ConfirmationResponse,
+  BusinessInfoParams,
+  BusinessInfoResponse
 } from './types';
 import { PRACTICE_CONFIG, DEFAULT_TIME_SLOTS, ID_PREFIXES } from './business-context';
 import { MESSAGE_TEMPLATES } from './templates';
@@ -19,12 +21,14 @@ import {
   generateAppointmentId,
   generatePatientId,
   generateRiskAssessmentId,
+  generateBusinessId,
   generateTimeSlots,
   formatTimeSlots,
   formatDateForDisplay,
   formatDateForSpeech,
   isHighRiskLevel
 } from './helpers';
+import { SupabaseBusinessService } from '../supabase/business-service';
 
 /**
  * Practice Information Service
@@ -256,5 +260,93 @@ export class ConfirmationService {
       params.time
     );
     return confirmationData.responseMessage;
+  }
+}
+
+/**
+ * Business Information Service
+ */
+export class BusinessInfoService {
+  static async saveBusinessInfo(params: BusinessInfoParams): Promise<BusinessInfoResponse> {    
+
+    try {
+      // Generate unique business ID
+      
+      // Save to Supabase database
+      const data = await SupabaseBusinessService.saveBusinessInfo(params);
+
+      // TODO: Send notification to business development team
+      // Example: await notificationService.notifyBusinessTeam(params);
+
+      console.log('Business info saved successfully:', {        
+        businessName: params.business_name,
+        businessEmail: params.business_email
+      });
+
+      return {
+        business_id: data.business_id
+      };
+    } catch (error) {
+      console.error('Failed to save business info:', error);
+      throw new Error('Failed to save business information. Please try again.');
+    }
+  }
+
+  static getBusinessInfoMessage(): string {
+    return "Thank you for setting up your business with us. Have a great day!";
+  }
+
+  /**
+   * Get business information by business ID
+   */
+  static async getBusinessInfo(businessId: string) {
+    try {
+      const businessInfo = await SupabaseBusinessService.getBusinessInfo(businessId);
+      
+      if (!businessInfo) {
+        throw new Error('Business information not found');
+      }
+
+      return businessInfo;
+    } catch (error) {
+      console.error('Failed to get business info:', error);
+      throw new Error('Failed to retrieve business information. Please check the business ID.');
+    }
+  }
+
+  /**
+   * Get all business information records
+   */
+  static async getAllBusinessInfo() {
+    try {
+      return await SupabaseBusinessService.getAllBusinessInfo();
+    } catch (error) {
+      console.error('Failed to get all business info:', error);
+      throw new Error('Failed to retrieve business information.');
+    }
+  }
+
+  /**
+   * Update business information
+   */
+  static async updateBusinessInfo(businessId: string, updates: Partial<BusinessInfoParams>) {
+    try {
+      return await SupabaseBusinessService.updateBusinessInfo(businessId, updates);
+    } catch (error) {
+      console.error('Failed to update business info:', error);
+      throw new Error('Failed to update business information.');
+    }
+  }
+
+  /**
+   * Delete business information
+   */
+  static async deleteBusinessInfo(businessId: string) {
+    try {
+      return await SupabaseBusinessService.deleteBusinessInfo(businessId);
+    } catch (error) {
+      console.error('Failed to delete business info:', error);
+      throw new Error('Failed to delete business information.');
+    }
   }
 }

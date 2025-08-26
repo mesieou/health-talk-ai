@@ -1,0 +1,7 @@
+
+# Hume AI Configuration IDs
+NEXT_PUBLIC_HUME_CONFIG_ID_CUSTOMER=d0aa3ece-c4a5-435a-8593-30a98b467c1e
+NEXT_PUBLIC_HUME_CONFIG_ID=d0aa3ece-c4a5-435a-8593-30a98b467c1e
+
+# Tool IDs for reference
+# save_business_info: 8796655e-4f92-4537-8166-dfa8c2db3e5b

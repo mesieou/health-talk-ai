@@ -115,3 +115,17 @@ export interface ConfirmationParams extends BaseParams {
 export interface ConfirmationResponse {
   confirmation_sent: boolean;
 }
+
+// Business Information Types
+export interface BusinessInfoParams {
+  business_name: string;
+  business_address: string;
+  business_phone: string;
+  business_email: string;
+  business_website: string;
+  business_description: string;
+}
+
+export interface BusinessInfoResponse {
+  business_id: string;
+}
