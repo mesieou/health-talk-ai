@@ -22,6 +22,7 @@ import {
   generateTimeSlots,
   formatTimeSlots,
   formatDateForDisplay,
+  formatDateForSpeech,
   isHighRiskLevel
 } from './helpers';
 
@@ -84,7 +85,7 @@ export class AvailabilityService {
 
   static formatAvailabilityMessage(data: AvailabilityResponse): string {
     const slotTimes = formatTimeSlots(data.available_slots);
-    const formattedDate = formatDateForDisplay(data.date);
+    const formattedDate = formatDateForSpeech(data.date);
     return `For ${formattedDate}, I have the following time slots available: ${slotTimes}. Would you like me to book one of these appointments for you?`;
   }
 }

@@ -6,7 +6,7 @@ import {
   ConsentService, PrivacyService,
 } from './tools';
 import { MESSAGE_TEMPLATES } from './templates';
-import { validateRequiredFields, isValidDateFormat, isValidTimeFormat, isValidPhoneNumber } from './helpers';
+import { validateRequiredFields, isValidDateFormat, isValidTimeFormat, isValidPhoneNumber, formatDateForSpeech } from './helpers';
 
 // Simple tool functions
 const tools = {
@@ -108,52 +108,17 @@ const tools = {
 
 // Simple router
 export async function runTool(toolName: string, params: any) {
-  const executionId = `exec_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-  console.log(`🛠️ [${executionId}] Tool router called:`, {
-    toolName,
-    params,
-    availableTools: Object.keys(tools),
-    timestamp: new Date().toISOString()
-  });
-
   const tool = tools[toolName as keyof typeof tools];
   if (!tool) {
-    console.log(`❌ [${executionId}] Unknown tool requested:`, {
-      requestedTool: toolName,
-      availableTools: Object.keys(tools)
-    });
+    console.log(`❌ Unknown tool: ${toolName}`);
     throw new Error(`Unknown tool: ${toolName}`);
   }
 
-  console.log(`⚡ [${executionId}] Executing tool function:`, {
-    toolName,
-    params,
-    paramsValidation: {
-      hasParams: !!params,
-      paramsType: typeof params,
-      paramsKeys: params ? Object.keys(params) : 'null',
-      paramsValues: params
-    }
-  });
-
   try {
     const result = await tool(params);
-
-    console.log(`✅ [${executionId}] Tool execution completed:`, {
-      toolName,
-      result,
-      executionTime: Date.now()
-    });
-
     return result;
   } catch (error) {
-    console.error(`💥 [${executionId}] Tool execution failed:`, {
-      toolName,
-      params,
-      error: error instanceof Error ? error.message : error,
-      stack: error instanceof Error ? error.stack : undefined
-    });
+    console.error(`💥 Tool ${toolName} failed:`, error instanceof Error ? error.message : error);
     throw error;
   }
 }

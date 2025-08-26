@@ -7,22 +7,12 @@ import StartCall from "./StartCall";
 import React, { ComponentRef, useRef } from "react";
 
 const handleToolCall: ToolCallHandler = async (toolCallMessage, send) => {
-  console.log('🔧 onToolCall handler triggered:', toolCallMessage);
+  console.log(`🔧 Tool: ${toolCallMessage.name}`);
 
   try {
-    // Parse parameters
     const args = JSON.parse(toolCallMessage.parameters);
-    console.log('📋 Parsed parameters:', args);
 
-    // Handle get_practice_info directly
-    if (toolCallMessage.name === 'get_practice_info') {
-      const response = `Hello! I'm Rachel from Mindful Mental Health Practice. We're open Monday to Thursday 9:00 AM - 6:00 PM, Friday 9:00 AM - 5:00 PM, Saturday 9:00 AM - 2:00 PM, and closed on Sundays. Our initial sessions are $180 and follow-up sessions are $150, with concession rates available. We're located at 123 Mental Health Street, Sydney NSW 2000, with free parking and just a 5-minute walk from Central Station. We specialize in mood disorders, anxiety, relationship issues, stress management, trauma therapy, and cognitive behavioral therapy. How can I help you today?`;
-
-      console.log('✅ Sending practice info response');
-      return send.success(response);
-    }
-
-    // Handle other tools via API
+    // Handle ALL tools via API to show in server logs
     const apiResponse = await fetch('/api/tools', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -34,11 +24,12 @@ const handleToolCall: ToolCallHandler = async (toolCallMessage, send) => {
     });
 
     const result = await apiResponse.json();
-    console.log('✅ API result:', result);
 
     if (result.success !== false) {
+      console.log(`✅ ${toolCallMessage.name} completed`);
       return send.success(result.message || JSON.stringify(result));
     } else {
+      console.log(`❌ ${toolCallMessage.name} failed`);
       return send.error({
         error: "Tool execution failed",
         code: "execution_error",
@@ -47,7 +38,7 @@ const handleToolCall: ToolCallHandler = async (toolCallMessage, send) => {
       });
     }
   } catch (error: any) {
-    console.error('💥 Tool call error:', error);
+    console.error(`💥 ${toolCallMessage.name} error:`, error.message);
     return send.error({
       error: "Tool execution exception",
       code: "execution_exception",

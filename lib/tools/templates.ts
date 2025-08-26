@@ -1,4 +1,5 @@
 import { PRACTICE_CONFIG, getCurrentDateReadable, getCurrentDateTimeAU } from './business-context';
+import { formatDateForSpeech } from './helpers';
 
 // Message templates
 export const MESSAGE_TEMPLATES = {
@@ -14,7 +15,7 @@ export const MESSAGE_TEMPLATES = {
     responseMessage: "I've sent you a confirmation with your appointment details. Please check your phone for the confirmation message."
   }),
   BOOKING: {
-    success: (name: string, date: string, time: string, appointmentId: string) => `Great! I've booked your appointment for ${date} at ${time}. You'll receive a confirmation shortly.`
+    success: (name: string, date: string, time: string, appointmentId: string) => `Great! I've booked your appointment for ${formatDateForSpeech(date)} at ${time}. You'll receive a confirmation shortly.`
   },
   RISK_ASSESSMENT: {
     logged: () => `I've logged your assessment. If you need immediate help, please call Lifeline on ${PRACTICE_CONFIG.CONTACT.lifeline}.`,

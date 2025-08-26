@@ -39,7 +39,7 @@ export default function StartCall({ configId, accessToken }: { configId?: string
                     .then(() => {
                       // Expose sendToolMessage for tool responses as per Hume docs
                       (window as any)._humeSendToolMessage = sendToolMessage;
-                      console.log('🔗 Connected to EVI and exposed sendToolMessage');
+                      console.log('🔗 EVI connected');
                     })
                     .catch(() => {
                       toast.error("Unable to start call");

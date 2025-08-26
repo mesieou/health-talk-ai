@@ -111,6 +111,34 @@ export function formatDateForDisplay(dateString: string): string {
 }
 
 /**
+ * Formats a date string for speech (better TTS pronunciation)
+ */
+export function formatDateForSpeech(dateString: string): string {
+  const date = new Date(dateString);
+  const weekday = date.toLocaleDateString('en-AU', { weekday: 'long' });
+  const month = date.toLocaleDateString('en-AU', { month: 'long' });
+  const day = date.getDate();
+  const year = date.getFullYear();
+
+  // Format year for better pronunciation (2025 → "twenty twenty-five")
+  let yearSpeech;
+  if (year >= 2000 && year <= 2099) {
+    const lastTwoDigits = year % 100;
+    if (lastTwoDigits === 0) {
+      yearSpeech = `twenty hundred`;
+    } else if (lastTwoDigits < 10) {
+      yearSpeech = `twenty oh ${lastTwoDigits}`;
+    } else {
+      yearSpeech = `twenty ${lastTwoDigits}`;
+    }
+  } else {
+    yearSpeech = year.toString();
+  }
+
+  return `${weekday}, ${month} ${day}, ${yearSpeech}`;
+}
+
+/**
  * Sanitizes input strings to prevent XSS
  */
 export function sanitizeString(input: string): string {
