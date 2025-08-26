@@ -36,6 +36,20 @@
       "fallback_content": "Unable to retrieve practice information at the moment. Please contact us directly for assistance."
     },
     {
+      "name": "log_consent",
+      "description": "Log patient consent for call recording",
+      "version_description": "Records whether the patient has given consent for the call to be recorded for quality purposes.",
+      "parameters": "{ \"type\": \"object\", \"required\": [\"consent_given\"], \"properties\": { \"consent_given\": { \"type\": \"boolean\", \"description\": \"Whether the patient has given consent for call recording\" }, \"reason\": { \"type\": \"string\", \"description\": \"Optional reason for consent decision\" } } }",
+      "fallback_content": "Unable to log consent at the moment. Please proceed with the call."
+    },
+    {
+      "name": "log_privacy_check",
+      "description": "Log privacy check confirmation",
+      "version_description": "Records whether the patient has confirmed they are in a private location for the call.",
+      "parameters": "{ \"type\": \"object\", \"required\": [\"privacy_confirmed\"], \"properties\": { \"privacy_confirmed\": { \"type\": \"boolean\", \"description\": \"Whether the patient has confirmed they are in a private location\" }, \"reason\": { \"type\": \"string\", \"description\": \"Optional reason for privacy status\" } } }",
+      "fallback_content": "Unable to log privacy check at the moment. Please proceed with the call."
+    },
+    {
       "name": "send_confirmation",
       "description": "Send appointment confirmation via SMS or email",
       "version_description": "Sends appointment confirmation messages to patients via their preferred method.",

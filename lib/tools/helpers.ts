@@ -1,4 +1,4 @@
-import { ID_PREFIXES } from './business-context';
+import { PRACTICE_CONFIG, DEFAULT_TIME_SLOTS, ID_PREFIXES } from './business-context';
 
 // Utility functions for common operations
 
@@ -33,21 +33,26 @@ export function generateRiskAssessmentId(): string {
 /**
  * Formats time slots from 24-hour to 12-hour format with AM/PM
  */
-export function formatTimeSlots(slots: string[]): string[] {
+export function formatTimeSlots(slots: string[]): string {
+  if (!slots || slots.length === 0) {
+    return 'no available slots';
+  }
+
   return slots.map(slot => {
-    const time = slot.split(' ')[1] || slot;
-    const [hour, minute] = time.split(':');
+    // Handle both "2025-08-26 09:00" and "09:00" formats
+    const timePart = slot.includes(' ') ? slot.split(' ')[1] : slot;
+    const [hour, minute] = timePart.split(':');
     const hourNum = parseInt(hour);
     const period = hourNum >= 12 ? 'PM' : 'AM';
     const displayHour = hourNum > 12 ? hourNum - 12 : hourNum === 0 ? 12 : hourNum;
 
-    // Format time in a more natural way for speech
+    // Use "o'clock" for times ending in :00
     if (minute === '00') {
       return `${displayHour} o'clock ${period}`;
-    } else {
-      return `${displayHour}:${minute} ${period}`;
     }
-  });
+
+    return `${displayHour}:${minute} ${period}`;
+  }).join(', ');
 }
 
 /**
@@ -57,15 +62,15 @@ export function isValidDateFormat(date: string): boolean {
   const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
   if (!dateRegex.test(date)) return false;
 
-  const dateObj = new Date(date);
-  return dateObj instanceof Date && !isNaN(dateObj.getTime());
+  const parsedDate = new Date(date);
+  return !isNaN(parsedDate.getTime());
 }
 
 /**
  * Validates time format (HH:mm)
  */
 export function isValidTimeFormat(time: string): boolean {
-  const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+  const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
   return timeRegex.test(time);
 }
 
@@ -73,9 +78,9 @@ export function isValidTimeFormat(time: string): boolean {
  * Validates phone number (basic validation)
  */
 export function isValidPhoneNumber(phone: string): boolean {
-  // Basic phone validation - adjust regex based on your requirements
-  const phoneRegex = /^[\+]?[\d\s\-\(\)]{8,}$/;
-  return phoneRegex.test(phone);
+  // Australian phone number format (basic validation)
+  const phoneRegex = /^(\+61|0)[2-478](?:[ -]?[0-9]){8}$/;
+  return phoneRegex.test(phone.replace(/\s/g, ''));
 }
 
 /**
@@ -95,9 +100,9 @@ export function isHighRiskLevel(riskLevel: string): boolean {
 /**
  * Formats a date string for display
  */
-export function formatDateForDisplay(date: string): string {
-  const dateObj = new Date(date);
-  return dateObj.toLocaleDateString('en-AU', {
+export function formatDateForDisplay(dateString: string): string {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-AU', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
@@ -117,51 +122,48 @@ export function sanitizeString(input: string): string {
 /**
  * Validates required fields in an object
  */
-export function validateRequiredFields<T extends Record<string, any>>(
-  data: T,
-  requiredFields: (keyof T)[]
-): { isValid: boolean; missingFields: string[] } {
+export function validateRequiredFields(data: any, requiredFields: string[]) {
   const validationId = `validation_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  const missingFields: string[] = [];
 
+  console.log(`\n${'─'.repeat(50)}`);
   console.log(`🔍 [${validationId}] Starting field validation:`, {
     data,
-    requiredFields: requiredFields.map(f => String(f)),
-    dataKeys: Object.keys(data)
+    requiredFields,
+    dataKeys: Object.keys(data || {})
   });
+  console.log(`${'─'.repeat(50)}`);
+
+  const missingFields: string[] = [];
 
   for (const field of requiredFields) {
-    const value = data[field];
-    const fieldName = String(field);
+    const value = data?.[field];
+    const valueType = typeof value;
+    const isUndefined = value === undefined;
+    const isNull = value === null;
+    const isEmptyString = value === '';
+    const isWhitespaceOnly = typeof value === 'string' && value.trim() === '';
 
-    console.log(`🔍 [${validationId}] Validating field '${fieldName}':`, {
+    console.log(`🔍 [${validationId}] Validating field '${field}':`, {
       value,
-      valueType: typeof value,
-      isUndefined: value === undefined,
-      isNull: value === null,
-      isEmptyString: value === '',
-      isWhitespaceOnly: typeof value === 'string' && value.trim() === ''
+      valueType,
+      isUndefined,
+      isNull,
+      isEmptyString,
+      isWhitespaceOnly
     });
 
-    // More robust validation - check for falsy values and empty strings
-    const isValid = value !== undefined &&
-                   value !== null &&
-                   value !== '' &&
-                   !(typeof value === 'string' && value.trim() === '');
-
-    if (!isValid) {
-      missingFields.push(fieldName);
-      console.log(`❌ [${validationId}] Field '${fieldName}' is invalid`);
+    if (isUndefined || isNull || isEmptyString || isWhitespaceOnly) {
+      console.log(`❌ [${validationId}] Field '${field}' is invalid`);
+      missingFields.push(field);
     } else {
-      console.log(`✅ [${validationId}] Field '${fieldName}' is valid`);
+      console.log(`✅ [${validationId}] Field '${field}' is valid`);
     }
   }
 
-  const result = {
-    isValid: missingFields.length === 0,
-    missingFields
-  };
+  const isValid = missingFields.length === 0;
 
-  console.log(`📊 [${validationId}] Validation result:`, result);
-  return result;
+  console.log(`📊 [${validationId}] Validation result:`, { isValid, missingFields });
+  console.log(`${'─'.repeat(50)}\n`);
+
+  return { isValid, missingFields };
 }

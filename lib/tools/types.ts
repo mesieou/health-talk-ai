@@ -64,9 +64,9 @@ export interface BookingParams extends BaseParams {
   date_of_birth?: string;
   address?: string;
   emergency_contact?: string;
-  presenting_issue?: string;
+  presenting_issue: string;
   gp_referral?: string;
-  therapy_goals?: string;
+  therapy_goals: string;
 }
 
 export interface BookingResponse {

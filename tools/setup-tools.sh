@@ -35,6 +35,8 @@ tools=(
     "log_risk_assessment"
     "get_practice_info"
     "send_confirmation"
+    "log_consent"
+    "log_privacy_check"
 )
 
 for tool in "${tools[@]}"; do

@@ -3,6 +3,7 @@
 import {
   PracticeInfoService, AvailabilityService, BookingService,
   PatientService, RiskAssessmentService, ConfirmationService,
+  ConsentService, PrivacyService,
 } from './tools';
 import { MESSAGE_TEMPLATES } from './templates';
 import { validateRequiredFields, isValidDateFormat, isValidTimeFormat, isValidPhoneNumber } from './helpers';
@@ -12,6 +13,18 @@ const tools = {
   async 'get_practice_info'(params: any) {
     const data = PracticeInfoService.getPracticeInfo();
     const message = PracticeInfoService.formatPracticeMessage(params.info_type);
+    return { message, data };
+  },
+
+  async 'log_consent'(params: any) {
+    const data = await ConsentService.logConsent(params);
+    const message = ConsentService.getConsentMessage(params.consent_given);
+    return { message, data };
+  },
+
+  async 'log_privacy_check'(params: any) {
+    const data = await PrivacyService.logPrivacyCheck(params);
+    const message = PrivacyService.getPrivacyMessage(params.privacy_confirmed);
     return { message, data };
   },
 
@@ -33,7 +46,7 @@ const tools = {
     console.log(`✅ [${toolId}] Date validation passed:`, params.date);
 
     const data = await AvailabilityService.checkAvailability(params);
-    const message = AvailabilityService.formatAvailabilityMessage(data.date, data.available_slots);
+    const message = AvailabilityService.formatAvailabilityMessage(data);
 
     console.log(`✅ [${toolId}] check_availability completed:`, {
       date: data.date,

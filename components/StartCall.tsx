@@ -5,7 +5,7 @@ import { Phone } from "lucide-react";
 import { toast } from "sonner";
 
 export default function StartCall({ configId, accessToken }: { configId?: string, accessToken: string }) {
-  const { status, connect } = useVoice();
+  const { status, connect, sendToolMessage } = useVoice();
 
   return (
     <AnimatePresence>
@@ -36,10 +36,10 @@ export default function StartCall({ configId, accessToken }: { configId?: string
                     auth: { type: "accessToken", value: accessToken },
                     configId,
                   })
-                    .then((socket) => {
-                      // Expose WebSocket for tool responses
-                      (window as any)._humeWebSocket = socket;
-                      console.log('🔗 Connected to EVI and exposed WebSocket');
+                    .then(() => {
+                      // Expose sendToolMessage for tool responses as per Hume docs
+                      (window as any)._humeSendToolMessage = sendToolMessage;
+                      console.log('🔗 Connected to EVI and exposed sendToolMessage');
                     })
                     .catch(() => {
                       toast.error("Unable to start call");

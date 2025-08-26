@@ -82,10 +82,10 @@ export class AvailabilityService {
     };
   }
 
-  static formatAvailabilityMessage(date: string, slots: string[]): string {
-    const slotTimes = formatTimeSlots(slots);
-    const formattedDate = formatDateForDisplay(date);
-    return `For ${formattedDate}, I have the following time slots available: ${slotTimes.join(', ')}. Would you like me to book one of these appointments for you?`;
+  static formatAvailabilityMessage(data: AvailabilityResponse): string {
+    const slotTimes = formatTimeSlots(data.available_slots);
+    const formattedDate = formatDateForDisplay(data.date);
+    return `For ${formattedDate}, I have the following time slots available: ${slotTimes}. Would you like me to book one of these appointments for you?`;
   }
 }
 
@@ -143,6 +143,54 @@ export class PatientService {
 
   static getPatientInfoMessage(): string {
     return MESSAGE_TEMPLATES.PATIENT_INFO.saved;
+  }
+}
+
+/**
+ * Consent Service
+ */
+export class ConsentService {
+  static async logConsent(params: { consent_given: boolean; reason?: string }): Promise<{ consent_id: string }> {
+    // TODO: Integrate with your consent tracking system
+    // Example: await consentAPI.logConsent(params);
+
+    const consentId = `CONSENT-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+    console.log(`Consent logged: ${consentId} - Given: ${params.consent_given}`);
+
+    return {
+      consent_id: consentId
+    };
+  }
+
+  static getConsentMessage(consentGiven: boolean): string {
+    return consentGiven
+      ? "Thank you for confirming."
+      : "I understand you don't consent to recording. Unfortunately, I cannot proceed without consent. Please call back when you're ready to provide consent.";
+  }
+}
+
+/**
+ * Privacy Service
+ */
+export class PrivacyService {
+  static async logPrivacyCheck(params: { privacy_confirmed: boolean; reason?: string }): Promise<{ privacy_id: string }> {
+    // TODO: Integrate with your privacy tracking system
+    // Example: await privacyAPI.logPrivacyCheck(params);
+
+    const privacyId = `PRIVACY-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+    console.log(`Privacy check logged: ${privacyId} - Confirmed: ${params.privacy_confirmed}`);
+
+    return {
+      privacy_id: privacyId
+    };
+  }
+
+  static getPrivacyMessage(privacyConfirmed: boolean): string {
+    return privacyConfirmed
+      ? "Perfect, thank you for confirming your privacy."
+      : "I understand you're not in a private location. Please find a quiet, private space and call back when you're ready to proceed.";
   }
 }
 
