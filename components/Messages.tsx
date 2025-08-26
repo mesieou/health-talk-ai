@@ -14,7 +14,7 @@ const Messages = forwardRef<
   return (
     <motion.div
       layoutScroll
-      className={"grow overflow-auto p-4 pt-24"}
+      className={"grow overflow-auto p-4 pt-32"}
       ref={ref}
     >
       <motion.div
@@ -31,9 +31,10 @@ const Messages = forwardRef<
                   key={msg.type + index}
                   className={cn(
                     "w-[80%]",
-                    "bg-card",
-                    "border border-border rounded-xl",
-                    msg.type === "user_message" ? "ml-auto" : ""
+                    "border rounded-2xl shadow-sm",
+                    msg.type === "user_message"
+                      ? "ml-auto bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-emerald-300"
+                      : "bg-white border-gray-200"
                   )}
                   initial={{
                     opacity: 0,
@@ -48,17 +49,19 @@ const Messages = forwardRef<
                     y: 0,
                   }}
                 >
-                  <div className={"flex items-center justify-between pt-4 px-3"}>
+                  <div className={"flex items-center justify-between pt-4 px-4"}>
                     <div
                       className={cn(
-                        "text-xs capitalize font-medium leading-none opacity-50 tracking-tight"
+                        "text-xs capitalize font-medium leading-none tracking-tight",
+                        msg.type === "user_message" ? "text-white/70" : "text-gray-500"
                       )}
                     >
-                      {msg.message.role}
+                      {msg.message.role === "user" ? "You" : "Health Talk AI"}
                     </div>
                     <div
                       className={cn(
-                        "text-xs capitalize font-medium leading-none opacity-50 tracking-tight"
+                        "text-xs font-medium leading-none tracking-tight",
+                        msg.type === "user_message" ? "text-white/70" : "text-gray-500"
                       )}
                     >
                       {msg.receivedAt.toLocaleTimeString(undefined, {
@@ -68,7 +71,10 @@ const Messages = forwardRef<
                       })}
                     </div>
                   </div>
-                  <div className={"pb-3 px-3"}>{msg.message.content}</div>
+                  <div className={cn(
+                    "pb-4 px-4 leading-relaxed",
+                    msg.type === "user_message" ? "text-white" : "text-gray-800"
+                  )}>{msg.message.content}</div>
                   <Expressions values={{ ...msg.models.prosody?.scores }} />
                 </motion.div>
               );

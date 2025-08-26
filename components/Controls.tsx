@@ -35,11 +35,11 @@ export default function Controls() {
               opacity: 0,
             }}
             className={
-              "p-4 bg-card border border-border/50 rounded-full flex items-center gap-4"
+              "p-4 bg-white/95 backdrop-blur-md border border-emerald-200 rounded-full flex items-center gap-4 shadow-xl"
             }
           >
             <Toggle
-              className={"rounded-full"}
+              className={"rounded-full bg-emerald-100 hover:bg-emerald-200 data-[state=on]:bg-emerald-500 data-[state=on]:text-white transition-all duration-200"}
               pressed={!isMuted}
               onPressedChange={() => {
                 if (isMuted) {
@@ -61,7 +61,7 @@ export default function Controls() {
             </div>
 
             <Button
-              className={"flex items-center gap-1 rounded-full"}
+              className={"flex items-center gap-2 rounded-full bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white shadow-md hover:shadow-lg transition-all duration-200"}
               onClick={() => {
                 disconnect();
               }}
@@ -69,7 +69,7 @@ export default function Controls() {
             >
               <span>
                 <Phone
-                  className={"size-4 opacity-50 fill-current"}
+                  className={"size-4 fill-current"}
                   strokeWidth={0}
                 />
               </span>

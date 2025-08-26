@@ -73,12 +73,29 @@ export default function ClientComponent({
 
   const configId = getConfigId(activeAgent);
 
-  return (
+    return (
     <div
       className={
-        "relative grow flex flex-col mx-auto w-full overflow-hidden h-[0px]"
+        "relative grow flex flex-col mx-auto w-full overflow-hidden h-[0px] bg-gradient-to-br from-emerald-50 via-blue-50 to-purple-50"
       }
     >
+      {/* Health Talk AI Header */}
+      <div className="absolute top-0 left-0 right-0 z-40 bg-gradient-to-r from-emerald-600 via-teal-600 to-blue-600 text-white p-4 shadow-lg">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2L13.09 6.26L18 5L16.74 9.26L22 10L17.74 12L22 14L16.74 14.74L18 19L13.09 17.74L12 22L10.91 17.74L6 19L7.26 14.74L2 14L6.26 12L2 10L7.26 9.26L6 5L10.91 6.26L12 2Z"/>
+              </svg>
+            </div>
+            <div>
+              <h1 className="text-xl font-bold">Health Talk AI</h1>
+              <p className="text-sm text-white/80">Your Empathic Healthcare Assistant</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <AgentSwitcher
         activeAgent={activeAgent}
         onSwitch={setActiveAgent}
