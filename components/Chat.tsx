@@ -4,10 +4,11 @@ import { VoiceProvider, ToolCallHandler } from "@humeai/voice-react";
 import Messages from "./Messages";
 import Controls from "./Controls";
 import StartCall from "./StartCall";
-import React, { ComponentRef, useRef } from "react";
+import AgentSwitcher, { AgentType, AGENTS } from "./AgentSwitcher";
+import React, { ComponentRef, useRef, useState } from "react";
 
-const handleToolCall: ToolCallHandler = async (toolCallMessage, send) => {
-  console.log(`🔧 Tool: ${toolCallMessage.name}`);
+const handleToolCall = (activeAgent: AgentType): ToolCallHandler => async (toolCallMessage, send) => {
+  console.log(`🔧 Tool: ${toolCallMessage.name} (Agent: ${activeAgent})`);
 
   try {
     const args = JSON.parse(toolCallMessage.parameters);
@@ -19,7 +20,8 @@ const handleToolCall: ToolCallHandler = async (toolCallMessage, send) => {
       body: JSON.stringify({
         tool: toolCallMessage.name,
         parameters: args,
-        toolCallId: toolCallMessage.toolCallId
+        toolCallId: toolCallMessage.toolCallId,
+        agentType: activeAgent
       })
     });
 
@@ -53,11 +55,23 @@ export default function ClientComponent({
 }: {
   accessToken: string;
 }) {
+  const [activeAgent, setActiveAgent] = useState<AgentType>('customer-service');
   const timeout = useRef<number | null>(null);
   const ref = useRef<ComponentRef<typeof Messages> | null>(null);
 
-    // optional: use configId from environment variable
-  const configId = process.env['NEXT_PUBLIC_HUME_CONFIG_ID'];
+  // Get configId based on active agent
+  const getConfigId = (agentType: AgentType): string | undefined => {
+    switch (agentType) {
+      case 'business':
+        return process.env['NEXT_PUBLIC_HUME_CONFIG_ID_BUSINESS'];
+      case 'customer-service':
+        return process.env['NEXT_PUBLIC_HUME_CONFIG_ID_CUSTOMER'] || process.env['NEXT_PUBLIC_HUME_CONFIG_ID'];
+      default:
+        return process.env['NEXT_PUBLIC_HUME_CONFIG_ID'];
+    }
+  };
+
+  const configId = getConfigId(activeAgent);
 
   return (
     <div
@@ -65,7 +79,12 @@ export default function ClientComponent({
         "relative grow flex flex-col mx-auto w-full overflow-hidden h-[0px]"
       }
     >
-            <VoiceProvider
+      <AgentSwitcher
+        activeAgent={activeAgent}
+        onSwitch={setActiveAgent}
+      />
+
+      <VoiceProvider
         onMessage={(message) => {
           if (timeout.current) {
             window.clearTimeout(timeout.current);
@@ -82,7 +101,7 @@ export default function ClientComponent({
             }
           }, 200);
         }}
-        onToolCall={handleToolCall}
+        onToolCall={handleToolCall(activeAgent)}
       >
         <Messages ref={ref} />
         <Controls />

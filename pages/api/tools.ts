@@ -7,7 +7,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { tool, parameters, toolCallId } = req.body;
+    const { tool, parameters, toolCallId, agentType } = req.body;
 
     if (!tool) {
       return res.status(400).json({ error: 'Tool parameter is required' });
@@ -25,14 +25,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     console.log('\n' + '='.repeat(80));
     console.log(`🤖 EVI → BACKEND: Tool request received`);
+    console.log(`🎯 Agent: ${agentType || 'unknown'}`);
     console.log(`📝 Tool: ${tool}`);
     console.log(`📋 Parameters:`, JSON.stringify(parsedParameters, null, 2));
     console.log(`🔑 Call ID: ${toolCallId}`);
     console.log('─'.repeat(80));
 
-    const result = await runTool(tool, parsedParameters);
+    // Optional: Add agent-specific tool restrictions
+    const result = await runTool(tool, parsedParameters, agentType);
 
     console.log(`📤 BACKEND → EVI: Sending response`);
+    console.log(`🎯 Agent: ${agentType || 'unknown'}`);
     console.log(`✅ Tool: ${tool} executed successfully`);
     console.log(`📄 Full Response:`, result.message);
     if (result.data) {
@@ -47,6 +50,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   } catch (error: any) {
     console.log('\n' + '='.repeat(80));
     console.error(`❌ BACKEND → EVI: Tool execution failed`);
+    console.error(`🎯 Agent: ${req.body?.agentType || 'unknown'}`);
     console.error(`🚫 Tool: ${req.body?.tool}`);
     console.error(`💥 Error: ${error.message}`);
     console.log('='.repeat(80) + '\n');
