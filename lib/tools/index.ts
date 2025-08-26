@@ -107,18 +107,19 @@ const tools = {
 };
 
 // Simple router
-export async function runTool(toolName: string, params: any) {
+export async function runTool(toolName: string, params: any, agentType?: string) {
   const tool = tools[toolName as keyof typeof tools];
   if (!tool) {
-    console.log(`❌ Unknown tool: ${toolName}`);
+    console.log(`❌ Unknown tool: ${toolName} (Agent: ${agentType || 'unknown'})`);
     throw new Error(`Unknown tool: ${toolName}`);
   }
 
   try {
+    console.log(`🔧 Running tool: ${toolName} (Agent: ${agentType || 'unknown'})`);
     const result = await tool(params);
     return result;
   } catch (error) {
-    console.error(`💥 Tool ${toolName} failed:`, error instanceof Error ? error.message : error);
+    console.error(`💥 Tool ${toolName} failed (Agent: ${agentType || 'unknown'}):`, error instanceof Error ? error.message : error);
     throw error;
   }
 }
