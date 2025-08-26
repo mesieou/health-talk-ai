@@ -4,9 +4,11 @@ import { Button } from "./ui/button";
 import { Phone } from "lucide-react";
 import { toast } from "sonner";
 import FloatingElements from "./FloatingElements";
+import { useState } from "react";
 
 export default function StartCall({ configId, accessToken }: { configId?: string, accessToken: string }) {
   const { status, connect, sendToolMessage } = useVoice();
+  const [isConnecting, setIsConnecting] = useState(false);
 
   return (
     <AnimatePresence>
@@ -91,29 +93,41 @@ export default function StartCall({ configId, accessToken }: { configId?: string
                 transition={{ delay: 1.2, duration: 0.6 }}
               >
                 <Button
-                  className={"z-50 flex items-center gap-3 rounded-full px-8 py-6 text-lg font-semibold bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"}
-                onClick={() => {
-                  connect({
-                    auth: { type: "accessToken", value: accessToken },
-                    configId,
-                  })
-                    .then(() => {
-                      // Expose sendToolMessage for tool responses as per Hume docs
-                      (window as any)._humeSendToolMessage = sendToolMessage;
-                      console.log('🔗 EVI connected');
+                  className={`z-50 flex items-center gap-3 rounded-full px-8 py-6 text-lg font-semibold bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 ${isConnecting ? 'cursor-wait' : ''}`}
+                  disabled={isConnecting}
+                  onClick={() => {
+                    setIsConnecting(true);
+                    connect({
+                      auth: { type: "accessToken", value: accessToken },
+                      configId,
                     })
-                    .catch(() => {
-                      toast.error("Unable to start call");
-                    });
-                }}
-              >
-                <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
-                  <Phone
-                    className={"size-4 fill-current"}
-                    strokeWidth={0}
-                  />
-                </div>
-                <span>Start Conversation</span>
+                      .then(() => {
+                        // Expose sendToolMessage for tool responses as per Hume docs
+                        (window as any)._humeSendToolMessage = sendToolMessage;
+                        console.log('🔗 EVI connected');
+                        setIsConnecting(false);
+                      })
+                      .catch(() => {
+                        toast.error("Unable to start call");
+                        setIsConnecting(false);
+                      });
+                  }}
+                >
+                  <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
+                    {isConnecting ? (
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        className="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
+                      />
+                    ) : (
+                      <Phone
+                        className={"size-4 fill-current"}
+                        strokeWidth={0}
+                      />
+                    )}
+                  </div>
+                  <span>{isConnecting ? "Connecting..." : "Start Conversation"}</span>
                 </Button>
               </motion.div>
             </motion.div>
