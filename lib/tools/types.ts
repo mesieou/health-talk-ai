@@ -61,9 +61,6 @@ export interface BookingParams extends BaseParams {
   phone: string;
   date: string;
   time: string;
-  date_of_birth?: string;
-  address?: string;
-  emergency_contact?: string;
   presenting_issue: string;
   gp_referral?: string;
   therapy_goals: string;
@@ -77,10 +74,7 @@ export interface BookingResponse {
 // Patient Information Types
 export interface PatientInfoParams {
   patient_name: string;
-  date_of_birth?: string;
   phone: string;
-  address?: string;
-  emergency_contact?: string;
   presenting_issue?: string;
   screening_status?: 'incomplete' | 'complete' | 'high_risk';
 }

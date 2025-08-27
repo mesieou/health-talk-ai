@@ -107,9 +107,6 @@ export class BookingService {
     const patientId = await PatientService.savePatientInfo({
       patient_name: params.patient_name,
       phone: params.phone,
-      date_of_birth: params.date_of_birth,
-      address: params.address,
-      emergency_contact: params.emergency_contact,
       presenting_issue: params.presenting_issue
     });
 
