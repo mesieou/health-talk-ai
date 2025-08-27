@@ -3,7 +3,7 @@
 import {
   PracticeInfoService, AvailabilityService, BookingService,
   PatientService, RiskAssessmentService, ConfirmationService,
-  ConsentService, PrivacyService,
+  ConsentService, PrivacyService, BusinessInfoService
 } from './tools';
 import { MESSAGE_TEMPLATES } from './templates';
 import { validateRequiredFields, isValidDateFormat, isValidTimeFormat, isValidPhoneNumber, formatDateForSpeech } from './helpers';
@@ -79,7 +79,7 @@ const tools = {
     return { message, data };
   },
 
-      async 'log_risk_assessment'(params: any) {
+  async 'log_risk_assessment'(params: any) {
     const validation = validateRequiredFields(params, ['patient_name', 'risk_level']);
     if (!validation.isValid) throw new Error(`Missing: ${validation.missingFields.join(', ')}`);
 
@@ -102,6 +102,16 @@ const tools = {
 
     const data = await ConfirmationService.sendConfirmation(params);
     const message = ConfirmationService.getConfirmationMessage(params);
+    return { message, data };
+  },
+
+  async 'save_business_info'(params: any) {
+    const validation = validateRequiredFields(params, ['business_name', 'business_address', 'business_phone', 'business_email', 'business_website', 'business_description']);
+    if (!validation.isValid) throw new Error(`Missing: ${validation.missingFields.join(', ')}`);
+    // if (!isValidPhoneNumber(params.business_phone)) throw new Error('Invalid phone number');
+
+    const data = await BusinessInfoService.saveBusinessInfo(params);
+    const message = BusinessInfoService.getBusinessInfoMessage();
     return { message, data };
   }
 };

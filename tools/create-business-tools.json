@@ -1,0 +1,11 @@
+{
+  "tools": [
+    {
+      "name": "save_business_info",
+      "description": "Save business information",
+      "version_description": "Save business information",
+      "parameters": "{ \"type\": \"object\", \"required\": [\"business_name\", \"business_address\", \"business_phone\", \"business_email\", \"business_website\", \"business_description\"], \"properties\": { \"business_name\": { \"type\": \"string\", \"description\": \"Business name\" }, \"business_address\": { \"type\": \"string\", \"description\": \"Business address\" }, \"business_phone\": { \"type\": \"string\", \"description\": \"Business phone\" }, \"business_email\": { \"type\": \"string\", \"description\": \"Business email\" }, \"business_website\": { \"type\": \"string\", \"description\": \"Business website\" }, \"business_description\": { \"type\": \"string\", \"description\": \"Business description\" } } }",
+      "fallback_content": "Unable to save business information at the moment. Please try again or contact us directly."
+    }
+  ]
+}
