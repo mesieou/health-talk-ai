@@ -155,7 +155,7 @@ export class BookingService {
     const startDateTime = new Date(params.date + 'T' + params.time + ':00');
     const endDateTime = new Date(startDateTime.getTime() + 60 * 60 * 1000); // Add 1 hour
 
-    const appointmentData: any = {
+    const appointmentData: CreateAppointmentRequest = {
       patient_id: patient.id || 0,
       practitioner_id: practitioners.practitioners[0].id!,
       appointment_type_id: appointmentTypes.appointment_types[0].id!,
