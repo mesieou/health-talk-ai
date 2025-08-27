@@ -26,9 +26,18 @@ import {
   formatTimeSlots,
   formatDateForDisplay,
   formatDateForSpeech,
-  isHighRiskLevel
+  isHighRiskLevel,
+  parseAustralianAddress
 } from './helpers';
 import { SupabaseBusinessService } from '../supabase/business-service';
+
+import dotenv from 'dotenv';
+import client, { ClinikoClient } from 'cliniko-api-client';
+import { CreatePatientRequest, CreateAppointmentRequest } from 'cliniko-api-client/src/types';
+
+dotenv.config();
+
+const clinikoClient = new ClinikoClient();
 
 /**
  * Practice Information Service
@@ -101,22 +110,66 @@ export class BookingService {
   static async bookAppointment(params: BookingParams): Promise<BookingResponse> {
     // TODO: Integrate with your booking system
     // Example: const booking = await bookingAPI.createAppointment(params);
+    // Parse the address string into structured components
+    
+    // Extract first and last name
+    const firstName = params.patient_name?.split(' ')[0];
+    const lastName = params.patient_name?.split(' ')[1] || 'Surname';
+    
+    // Check if patient already exists
+    const existingPatients = await clinikoClient.searchPatients(firstName, lastName);
+    let patient;
+    
+    if (existingPatients.patients && existingPatients.patients.length > 0) {
+      // Use the first matching patient
+      patient = existingPatients.patients[0];
+      console.log(`Using existing patient: ${patient.first_name} ${patient.last_name} (ID: ${patient.id})`);
+    } else {
+      // Create new patient if none found
+      const newPatientData: CreatePatientRequest = {
+        first_name: firstName,
+        last_name: lastName,
+        date_of_birth: '1990-01-01',
+        gender: 'Other',
+        email: 'test@test.com',
+        phone_number: params.phone || '+61 400 123 456',
+        address_1: '123 Test Street',
+        city: 'Melbourne',
+        state: 'VIC',
+        post_code: '3000',
+        country: 'Australia',
+        notes: 'Created via HEALTH TALK AI VOICE AGENT for testing'
+      };
 
-    // TODO: Integrate with your calendar system
-    // Example: await calendarAPI.blockSlot(params.date, params.time);
+      patient = await clinikoClient.createPatient(newPatientData);
+      console.log(`Created new patient: ${patient.first_name} ${patient.last_name} (ID: ${patient.id})`);
+    }
 
-    const appointmentId = generateAppointmentId();
+    const [practitioners, appointmentTypes, businesses] = await Promise.all([
+      clinikoClient.getPractitioners(),
+      clinikoClient.getAppointmentTypes(),
+      clinikoClient.getBusinesses()
+    ]);
 
-    // Save patient info if needed
-    const patientId = await PatientService.savePatientInfo({
-      patient_name: params.patient_name,
-      phone: params.phone,
-      presenting_issue: params.presenting_issue
-    });
+    // Calculate end time (1 hour after start time)
+    const startDateTime = new Date(params.date + 'T' + params.time + ':00');
+    const endDateTime = new Date(startDateTime.getTime() + 60 * 60 * 1000); // Add 1 hour
+
+    const appointmentData: any = {
+      patient_id: patient.id || 0,
+      practitioner_id: practitioners.practitioners[0].id!,
+      appointment_type_id: appointmentTypes.appointment_types[0].id!,
+      business_id: businesses.businesses[0].id!,
+      starts_at: startDateTime.toISOString(),
+      ends_at: endDateTime.toISOString(),
+      notes: params.presenting_issue || 'Appointment booked via HEALTH TALK AI'
+    };
+
+    const appointment = await clinikoClient.createAppointment(appointmentData);
 
     return {
-      appointment_id: appointmentId,
-      patient_id: patientId.patient_id
+      appointment_id: appointment.id + "",
+      patient_id: patient.id + ""
     };
   }
 
@@ -130,12 +183,6 @@ export class BookingService {
  */
 export class PatientService {
   static async savePatientInfo(params: PatientInfoParams): Promise<PatientInfoResponse> {
-    // TODO: Integrate with your database
-    // Example: await database.savePatient(params);
-
-    // TODO: Integrate with your CRM system
-    // Example: await crmAPI.createLead(params);
-
     const patientId = generatePatientId();
 
     return {

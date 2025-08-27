@@ -7,6 +7,23 @@ import {
 } from './tools';
 import { MESSAGE_TEMPLATES } from './templates';
 import { validateRequiredFields, isValidDateFormat, isValidTimeFormat, isValidPhoneNumber, formatDateForSpeech } from './helpers';
+import { ClinikoClient } from 'cliniko-api-client';
+import {
+  PracticeInfo,
+  AvailabilityParams,
+  AvailabilityResponse,
+  BookingParams,
+  BookingResponse,
+  PatientInfoParams,
+  PatientInfoResponse,
+  RiskAssessmentParams,
+  RiskAssessmentResponse,
+  ConfirmationParams,
+  ConfirmationResponse,
+  BusinessInfoParams,
+  BusinessInfoResponse
+} from './types';
+
 
 // Simple tool functions
 const tools = {
@@ -28,7 +45,7 @@ const tools = {
     return { message, data };
   },
 
-  async 'check_availability'(params: any) {
+  async 'check_availability'(params: AvailabilityParams ) {
     const toolId = `check_avail_${Date.now()}`;
     console.log(`📅 [${toolId}] check_availability called with:`, params);
 

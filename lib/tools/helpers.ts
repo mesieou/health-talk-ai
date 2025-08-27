@@ -202,3 +202,148 @@ export function validateRequiredFields(data: any, requiredFields: string[]) {
 
   return { isValid, missingFields };
 }
+
+/**
+ * Australian address parsing interface
+ */
+export interface ParsedAddress {
+  address_1: string;
+  city: string;
+  state: string;
+  post_code: string;
+  country: string;
+}
+
+/**
+ * Parses a single Australian address string into structured components
+ * Handles formats like: "123 Collins Street, Melbourne, VIC, 3000"
+ */
+export function parseAustralianAddress(addressString: string): ParsedAddress {
+  if (!addressString || typeof addressString !== 'string') {
+    return {
+      address_1: '',
+      city: '',
+      state: '',
+      post_code: '',
+      country: 'Australia'
+    };
+  }
+
+  // Clean the address string
+  const cleaned = addressString.trim().replace(/\s+/g, ' ');
+  
+  // Australian state codes (including territories)
+  const australianStates = [
+    'NSW', 'VIC', 'QLD', 'WA', 'SA', 'TAS', 'ACT', 'NT',
+    'New South Wales', 'Victoria', 'Queensland', 'Western Australia', 
+    'South Australia', 'Tasmania', 'Australian Capital Territory', 'Northern Territory'
+  ];
+
+  // Split by commas first, then by spaces for remaining parts
+  let parts = cleaned.split(',').map(part => part.trim());
+  
+  // If no commas, split by spaces and try to reconstruct
+  if (parts.length === 1) {
+    parts = cleaned.split(/\s+/);
+  }
+
+  let address_1 = '';
+  let city = '';
+  let state = '';
+  let post_code = '';
+
+  // Find postal code (4 digits at the end)
+  const postCodePattern = /\b\d{4}\b/;
+  const postCodeMatch = cleaned.match(postCodePattern);
+  if (postCodeMatch) {
+    post_code = postCodeMatch[0];
+  }
+
+  // Find state (look for Australian state codes)
+  let stateIndex = -1;
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i].replace(/[.,]/g, '').trim().toUpperCase();
+    if (australianStates.map(s => s.toUpperCase()).includes(part)) {
+      state = part.length <= 3 ? part : getStateAbbreviation(part);
+      stateIndex = i;
+      break;
+    }
+  }
+
+  // Reconstruct based on what we found
+  if (parts.length >= 3) {
+    // Format: "Street, City, State Postcode" or similar
+    if (stateIndex > 0) {
+      address_1 = parts.slice(0, stateIndex - 1).join(', ').replace(/[.,\s]+$/, '');
+      city = parts[stateIndex - 1].replace(/[.,]/g, '').trim();
+    } else {
+      // Fallback: first part is address, second is city
+      address_1 = parts[0].replace(/[.,]/g, '').trim();
+      city = parts[1].replace(/[.,]/g, '').trim();
+    }
+  } else {
+    // Try to parse from a space-separated string
+    const allParts = cleaned.split(/\s+/);
+    
+    // Remove postal code and state from the end
+    let remainingParts = [...allParts];
+    if (post_code) {
+      remainingParts = remainingParts.filter(part => part !== post_code);
+    }
+    if (state) {
+      remainingParts = remainingParts.filter(part => 
+        part.toUpperCase() !== state.toUpperCase()
+      );
+    }
+
+    // Last remaining word is likely city, rest is address
+    if (remainingParts.length >= 2) {
+      city = remainingParts[remainingParts.length - 1];
+      address_1 = remainingParts.slice(0, -1).join(' ');
+    } else if (remainingParts.length === 1) {
+      address_1 = remainingParts[0];
+      city = 'Melbourne'; // Default fallback
+    }
+  }
+
+  // Clean up and provide defaults
+  address_1 = address_1 || '123 Test Street';
+  city = city || 'Melbourne';
+  state = state || 'VIC';
+  post_code = post_code || '3000';
+
+  return {
+    address_1: capitalizeWords(address_1),
+    city: capitalizeWords(city),
+    state: state.toUpperCase(),
+    post_code,
+    country: 'Australia'
+  };
+}
+
+/**
+ * Convert full state names to abbreviations
+ */
+function getStateAbbreviation(fullStateName: string): string {
+  const stateMap: { [key: string]: string } = {
+    'NEW SOUTH WALES': 'NSW',
+    'VICTORIA': 'VIC',
+    'QUEENSLAND': 'QLD',
+    'WESTERN AUSTRALIA': 'WA',
+    'SOUTH AUSTRALIA': 'SA',
+    'TASMANIA': 'TAS',
+    'AUSTRALIAN CAPITAL TERRITORY': 'ACT',
+    'NORTHERN TERRITORY': 'NT'
+  };
+  
+  return stateMap[fullStateName.toUpperCase()] || fullStateName;
+}
+
+/**
+ * Capitalize each word in a string
+ */
+function capitalizeWords(str: string): string {
+  return str.replace(/\w\S*/g, (txt) => 
+    txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+  );
+}
