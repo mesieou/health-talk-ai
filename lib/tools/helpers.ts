@@ -74,11 +74,69 @@ export function isValidDateFormat(date: string): boolean {
 }
 
 /**
- * Validates time format (HH:mm)
+ * Validates time format (HH:mm or HH:mm AM/PM)
  */
 export function isValidTimeFormat(time: string): boolean {
-  const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
-  return timeRegex.test(time);
+  // 24-hour format: HH:MM
+  const time24Regex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+  // 12-hour format: HH:MM AM/PM
+  const time12Regex = /^(1[0-2]|0?[1-9]):[0-5][0-9]\s?(AM|PM)$/i;
+
+  return time24Regex.test(time) || time12Regex.test(time);
+}
+
+/**
+ * Gets the day of the week for a given date
+ */
+export function getDayOfWeek(date: string): string {
+  const dateObj = new Date(date);
+  const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  return days[dateObj.getDay()];
+}
+
+/**
+ * Checks if the practice is open on a given day
+ */
+export function isPracticeOpen(date: string): { isOpen: boolean, dayName: string, hours: string } {
+  const dayOfWeek = getDayOfWeek(date);
+  const hours = PRACTICE_CONFIG.HOURS[dayOfWeek as keyof typeof PRACTICE_CONFIG.HOURS];
+  const isOpen = hours !== 'closed' && hours !== 'Closed';
+
+  return {
+    isOpen,
+    dayName: dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1),
+    hours
+  };
+}
+
+/**
+ * Converts time to 24-hour format (HH:MM)
+ */
+export function convertTo24HourFormat(time: string): string {
+  // If already in 24-hour format, return as is
+  const time24Regex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+  if (time24Regex.test(time)) {
+    return time;
+  }
+
+  // Convert 12-hour to 24-hour format
+  const time12Regex = /^(1[0-2]|0?[1-9]):([0-5][0-9])\s?(AM|PM)$/i;
+  const match = time.match(time12Regex);
+
+  if (!match) {
+    throw new Error('Invalid time format');
+  }
+
+  const [, hours, minutes, period] = match;
+  let hour24 = parseInt(hours, 10);
+
+  if (period.toUpperCase() === 'PM' && hour24 !== 12) {
+    hour24 += 12;
+  } else if (period.toUpperCase() === 'AM' && hour24 === 12) {
+    hour24 = 0;
+  }
+
+  return `${hour24.toString().padStart(2, '0')}:${minutes}`;
 }
 
 /**
@@ -127,20 +185,8 @@ export function formatDateForSpeech(dateString: string): string {
   const day = date.getDate();
   const year = date.getFullYear();
 
-  // Format year for better pronunciation (2025 → "twenty twenty-five")
-  let yearSpeech;
-  if (year >= 2000 && year <= 2099) {
-    const lastTwoDigits = year % 100;
-    if (lastTwoDigits === 0) {
-      yearSpeech = `twenty hundred`;
-    } else if (lastTwoDigits < 10) {
-      yearSpeech = `twenty oh ${lastTwoDigits}`;
-    } else {
-      yearSpeech = `twenty ${lastTwoDigits}`;
-    }
-  } else {
-    yearSpeech = year.toString();
-  }
+  // For SMS, just use the normal year format (2024 instead of "twenty 24")
+  const yearSpeech = year.toString();
 
   return `${weekday}, ${month} ${day}, ${yearSpeech}`;
 }
@@ -231,17 +277,17 @@ export function parseAustralianAddress(addressString: string): ParsedAddress {
 
   // Clean the address string
   const cleaned = addressString.trim().replace(/\s+/g, ' ');
-  
+
   // Australian state codes (including territories)
   const australianStates = [
     'NSW', 'VIC', 'QLD', 'WA', 'SA', 'TAS', 'ACT', 'NT',
-    'New South Wales', 'Victoria', 'Queensland', 'Western Australia', 
+    'New South Wales', 'Victoria', 'Queensland', 'Western Australia',
     'South Australia', 'Tasmania', 'Australian Capital Territory', 'Northern Territory'
   ];
 
   // Split by commas first, then by spaces for remaining parts
   let parts = cleaned.split(',').map(part => part.trim());
-  
+
   // If no commas, split by spaces and try to reconstruct
   if (parts.length === 1) {
     parts = cleaned.split(/\s+/);
@@ -284,14 +330,14 @@ export function parseAustralianAddress(addressString: string): ParsedAddress {
   } else {
     // Try to parse from a space-separated string
     const allParts = cleaned.split(/\s+/);
-    
+
     // Remove postal code and state from the end
     let remainingParts = [...allParts];
     if (post_code) {
       remainingParts = remainingParts.filter(part => part !== post_code);
     }
     if (state) {
-      remainingParts = remainingParts.filter(part => 
+      remainingParts = remainingParts.filter(part =>
         part.toUpperCase() !== state.toUpperCase()
       );
     }
@@ -335,7 +381,7 @@ function getStateAbbreviation(fullStateName: string): string {
     'AUSTRALIAN CAPITAL TERRITORY': 'ACT',
     'NORTHERN TERRITORY': 'NT'
   };
-  
+
   return stateMap[fullStateName.toUpperCase()] || fullStateName;
 }
 
@@ -343,7 +389,7 @@ function getStateAbbreviation(fullStateName: string): string {
  * Capitalize each word in a string
  */
 function capitalizeWords(str: string): string {
-  return str.replace(/\w\S*/g, (txt) => 
+  return str.replace(/\w\S*/g, (txt) =>
     txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
   );
 }

@@ -15,6 +15,7 @@ import {
   BusinessInfoParams,
   BusinessInfoResponse
 } from './types';
+import { getTwilioService } from '../services/twilio';
 import { PRACTICE_CONFIG, DEFAULT_TIME_SLOTS, ID_PREFIXES } from './business-context';
 import { MESSAGE_TEMPLATES } from './templates';
 import {
@@ -27,7 +28,9 @@ import {
   formatDateForDisplay,
   formatDateForSpeech,
   isHighRiskLevel,
-  parseAustralianAddress
+  parseAustralianAddress,
+  convertTo24HourFormat,
+  isPracticeOpen
 } from './helpers';
 import { SupabaseBusinessService } from '../supabase/business-service';
 
@@ -84,6 +87,18 @@ export class PracticeInfoService {
  */
 export class AvailabilityService {
   static async checkAvailability(params: AvailabilityParams): Promise<AvailabilityResponse> {
+    // Check if practice is open on the requested date
+    const practiceStatus = isPracticeOpen(params.date);
+
+    if (!practiceStatus.isOpen) {
+      return {
+        date: params.date,
+        available_slots: [],
+        closed: true,
+        closedMessage: `We're closed on ${practiceStatus.dayName}s. We operate Monday to Friday (9:00 AM - 6:00 PM Monday-Thursday, 9:00 AM - 5:00 PM Friday). Please choose a weekday for your appointment.`
+      };
+    }
+
     // TODO: Integrate with your calendar system
     // Example: const slots = await calendarAPI.getAvailableSlotsForDate(params.date);
 
@@ -97,6 +112,10 @@ export class AvailabilityService {
   }
 
   static formatAvailabilityMessage(data: AvailabilityResponse): string {
+    if (data.closed && data.closedMessage) {
+      return data.closedMessage;
+    }
+
     const slotTimes = formatTimeSlots(data.available_slots);
     const formattedDate = formatDateForSpeech(data.date);
     return `For ${formattedDate}, I have the following time slots available: ${slotTimes}. Would you like me to book one of these appointments for you?`;
@@ -111,15 +130,15 @@ export class BookingService {
     // TODO: Integrate with your booking system
     // Example: const booking = await bookingAPI.createAppointment(params);
     // Parse the address string into structured components
-    
+
     // Extract first and last name
     const firstName = params.patient_name?.split(' ')[0];
     const lastName = params.patient_name?.split(' ')[1] || 'Surname';
-    
+
     // Check if patient already exists
     const existingPatients = await clinikoClient.searchPatients(firstName, lastName);
     let patient;
-    
+
     if (existingPatients.patients && existingPatients.patients.length > 0) {
       // Use the first matching patient
       patient = existingPatients.patients[0];
@@ -152,7 +171,8 @@ export class BookingService {
     ]);
 
     // Calculate end time (1 hour after start time)
-    const startDateTime = new Date(params.date + 'T' + params.time + ':00');
+    const time24Hour = convertTo24HourFormat(params.time);
+    const startDateTime = new Date(params.date + 'T' + time24Hour + ':00');
     const endDateTime = new Date(startDateTime.getTime() + 60 * 60 * 1000); // Add 1 hour
 
     const appointmentData: CreateAppointmentRequest = {
@@ -277,31 +297,63 @@ export class RiskAssessmentService {
  */
 export class ConfirmationService {
   static async sendConfirmation(params: ConfirmationParams): Promise<ConfirmationResponse> {
-    // TODO: Integrate with your SMS service
-    // TODO: Integrate with your email service
+    try {
+      // Validate phone number
+      const twilioService = getTwilioService();
 
-    const confirmationData = MESSAGE_TEMPLATES.CONFIRMATION(
-      params.patient_name,
-      params.date,
-      params.time
-    );
+      if (!twilioService.isValidPhoneNumber(params.phone)) {
+        console.warn(`Invalid phone number format: ${params.phone}`);
+        return {
+          confirmation_sent: false,
+          sms_sent: false,
+          error: 'Invalid phone number format'
+        };
+      }
 
-    // TODO: Use confirmationData.messageToSend for SMS/email services
-    // Example: await smsService.send(params.phone, confirmationData.messageToSend);
-    // Example: await emailService.send(params.email, confirmationData.messageToSend);
+      const confirmationData = MESSAGE_TEMPLATES.CONFIRMATION(
+        params.patient_name,
+        params.date,
+        params.time,
+        params.appointment_id
+      );
 
-    console.log('Confirmation message to send:', confirmationData.messageToSend);
+      // Send SMS via Twilio
+      const smsResult = await twilioService.sendSMS({
+        to: params.phone,
+        message: confirmationData.messageToSend
+      });
 
-    return {
-      confirmation_sent: true
-    };
+      if (smsResult.success) {
+        console.log(`Confirmation SMS sent successfully to ${params.phone}. Message ID: ${smsResult.messageId}`);
+        return {
+          confirmation_sent: true,
+          sms_sent: true,
+          sms_message_id: smsResult.messageId
+        };
+      } else {
+        console.error(`Failed to send confirmation SMS: ${smsResult.error}`);
+        return {
+          confirmation_sent: false,
+          sms_sent: false,
+          error: smsResult.error
+        };
+      }
+    } catch (error) {
+      console.error('Error in sendConfirmation:', error);
+      return {
+        confirmation_sent: false,
+        sms_sent: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
+      };
+    }
   }
 
   static getConfirmationMessage(params: ConfirmationParams): string {
     const confirmationData = MESSAGE_TEMPLATES.CONFIRMATION(
       params.patient_name,
       params.date,
-      params.time
+      params.time,
+      params.appointment_id
     );
     return confirmationData.responseMessage;
   }
@@ -311,18 +363,18 @@ export class ConfirmationService {
  * Business Information Service
  */
 export class BusinessInfoService {
-  static async saveBusinessInfo(params: BusinessInfoParams): Promise<BusinessInfoResponse> {    
+  static async saveBusinessInfo(params: BusinessInfoParams): Promise<BusinessInfoResponse> {
 
     try {
       // Generate unique business ID
-      
+
       // Save to Supabase database
       const data = await SupabaseBusinessService.saveBusinessInfo(params);
 
       // TODO: Send notification to business development team
       // Example: await notificationService.notifyBusinessTeam(params);
 
-      console.log('Business info saved successfully:', {        
+      console.log('Business info saved successfully:', {
         businessName: params.business_name,
         businessEmail: params.business_email
       });
@@ -346,7 +398,7 @@ export class BusinessInfoService {
   static async getBusinessInfo(businessId: string) {
     try {
       const businessInfo = await SupabaseBusinessService.getBusinessInfo(businessId);
-      
+
       if (!businessInfo) {
         throw new Error('Business information not found');
       }

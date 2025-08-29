@@ -53,6 +53,8 @@ export interface AvailabilityParams {
 export interface AvailabilityResponse {
   date: string;
   available_slots: string[];
+  closed?: boolean;
+  closedMessage?: string;
 }
 
 // Booking Types
@@ -103,11 +105,15 @@ export interface ConfirmationParams extends BaseParams {
   phone: string;
   date: string;
   time: string;
+  appointment_id?: string;
   confirmation_type?: 'sms' | 'email' | 'both';
 }
 
 export interface ConfirmationResponse {
   confirmation_sent: boolean;
+  sms_sent?: boolean;
+  sms_message_id?: string;
+  error?: string;
 }
 
 // Business Information Types

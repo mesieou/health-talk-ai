@@ -9,7 +9,7 @@ export const PRACTICE_CONFIG = {
     wednesday: "9:00 AM - 6:00 PM",
     thursday: "9:00 AM - 6:00 PM",
     friday: "9:00 AM - 5:00 PM",
-    saturday: "9:00 AM - 2:00 PM",
+    saturday: "closed",
     sunday: "Closed"
   },
   PRICING: {
@@ -19,19 +19,16 @@ export const PRACTICE_CONFIG = {
   },
   LOCATION: {
     address: "123 Mental Health Street, Sydney NSW 2000",
-    parking: "Free parking available",
-    public_transport: "5-minute walk from Central Station"
+    parking: "free parking available",
+    public_transport: "accessible by train and bus"
   },
   SERVICES: [
     "Mood disorders (depression, anxiety)",
-    "Relationship issues",
-    "Stress management",
-    "Trauma therapy",
     "Cognitive Behavioral Therapy (CBT)"
   ],
   CONTACT: {
-    phone: "(02) 9000 0000",
     email: "info@mentalhealthpractice.com.au",
+    phone: "0413 678 116",
     lifeline: "13 11 14"
   },
   FAQ: [
