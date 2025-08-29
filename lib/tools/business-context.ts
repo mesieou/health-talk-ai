@@ -1,8 +1,8 @@
 // Business configuration
 export const PRACTICE_CONFIG = {
   NAME: "Mindful Mental Health Practice",
-  CURRENT_DATE: new Date().toLocaleDateString('en-AU', { timeZone: 'Australia/Sydney' }).split('/').reverse().join('-'), // YYYY-MM-DD format in Australian timezone
-  CURRENT_TIME: new Date().toLocaleTimeString('en-AU', { timeZone: 'Australia/Sydney', hour12: false }), // HH:MM:SS format in Australian timezone
+  CURRENT_DATE: new Date().toLocaleDateString('en-AU', { timeZone: 'Australia/Melbourne' }).split('/').reverse().join('-'), // YYYY-MM-DD format in Melbourne timezone
+  CURRENT_TIME: new Date().toLocaleTimeString('en-AU', { timeZone: 'Australia/Melbourne', hour12: false }), // HH:MM:SS format in Melbourne timezone
   HOURS: {
     monday: "9:00 AM - 6:00 PM",
     tuesday: "9:00 AM - 6:00 PM",
@@ -18,9 +18,9 @@ export const PRACTICE_CONFIG = {
     concession_available: true
   },
   LOCATION: {
-    address: "123 Mental Health Street, Sydney NSW 2000",
+    address: "123 Mental Health Street, Melbourne VIC 3000",
     parking: "free parking available",
-    public_transport: "accessible by train and bus"
+    public_transport: "accessible by train and tram"
   },
   SERVICES: [
     "Mood disorders (depression, anxiety)",
@@ -92,20 +92,20 @@ export function getCurrentDateReadable(): string {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
-    timeZone: 'Australia/Sydney'
+    timeZone: 'Australia/Melbourne'
   });
 }
 
-// Helper function to get current date in ISO format (Australian timezone)
+// Helper function to get current date in ISO format (Melbourne timezone)
 export function getCurrentDateISO(): string {
   const today = new Date();
-  return today.toLocaleDateString('en-AU', { timeZone: 'Australia/Sydney' }).split('/').reverse().join('-');
+  return today.toLocaleDateString('en-AU', { timeZone: 'Australia/Melbourne' }).split('/').reverse().join('-');
 }
 
-// Helper function to get current time in Australian timezone
+// Helper function to get current time in Melbourne timezone
 export function getCurrentTimeAU(): string {
   return new Date().toLocaleTimeString('en-AU', {
-    timeZone: 'Australia/Sydney',
+    timeZone: 'Australia/Melbourne',
     hour12: false,
     hour: '2-digit',
     minute: '2-digit',

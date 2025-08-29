@@ -179,16 +179,20 @@ export function formatDateForDisplay(dateString: string): string {
  * Formats a date string for speech (better TTS pronunciation)
  */
 export function formatDateForSpeech(dateString: string): string {
-  const date = new Date(dateString);
-  const weekday = date.toLocaleDateString('en-AU', { weekday: 'long' });
-  const month = date.toLocaleDateString('en-AU', { month: 'long' });
-  const day = date.getDate();
-  const year = date.getFullYear();
+  console.log(`[formatDateForSpeech] Input: ${dateString}`);
 
-  // For SMS, just use the normal year format (2024 instead of "twenty 24")
-  const yearSpeech = year.toString();
+  // Parse date and ensure it's treated as local Melbourne time
+  const date = new Date(dateString + 'T00:00:00');
+  console.log(`[formatDateForSpeech] Parsed date: ${date.toISOString()}`);
 
-  return `${weekday}, ${month} ${day}, ${yearSpeech}`;
+  const weekday = date.toLocaleDateString('en-AU', { weekday: 'long', timeZone: 'Australia/Melbourne' });
+  const month = date.toLocaleDateString('en-AU', { month: 'long', timeZone: 'Australia/Melbourne' });
+  const day = date.toLocaleDateString('en-AU', { day: 'numeric', timeZone: 'Australia/Melbourne' });
+  const year = date.toLocaleDateString('en-AU', { year: 'numeric', timeZone: 'Australia/Melbourne' });
+
+  const result = `${weekday}, ${month} ${day}, ${year}`;
+  console.log(`[formatDateForSpeech] Result: ${result}`);
+  return result;
 }
 
 /**
@@ -206,13 +210,8 @@ export function sanitizeString(input: string): string {
 export function validateRequiredFields(data: any, requiredFields: string[]) {
   const validationId = `validation_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-  console.log(`\n${'─'.repeat(50)}`);
-  console.log(`🔍 [${validationId}] Starting field validation:`, {
-    data,
-    requiredFields,
-    dataKeys: Object.keys(data || {})
-  });
-  console.log(`${'─'.repeat(50)}`);
+  // Simplified validation logging
+  console.log(`🔍 [${validationId}] Validating required fields: ${requiredFields.join(', ')}`);
 
   const missingFields: string[] = [];
 
@@ -224,20 +223,9 @@ export function validateRequiredFields(data: any, requiredFields: string[]) {
     const isEmptyString = value === '';
     const isWhitespaceOnly = typeof value === 'string' && value.trim() === '';
 
-    console.log(`🔍 [${validationId}] Validating field '${field}':`, {
-      value,
-      valueType,
-      isUndefined,
-      isNull,
-      isEmptyString,
-      isWhitespaceOnly
-    });
-
     if (isUndefined || isNull || isEmptyString || isWhitespaceOnly) {
-      console.log(`❌ [${validationId}] Field '${field}' is invalid`);
+      console.log(`❌ [${validationId}] Missing field '${field}'`);
       missingFields.push(field);
-    } else {
-      console.log(`✅ [${validationId}] Field '${field}' is valid`);
     }
   }
 
